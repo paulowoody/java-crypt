@@ -1,0 +1,43 @@
+import java.security.*;
+import java.util.Date;
+import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import javax.security.auth.x500.X500Principal;
+import sun.security.x509.*;
+
+public class SSLCertificateExample {
+    public static void main(String[] args) throws Exception {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(2048);
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+        X509CertInfo info = new X509CertInfo();
+        Date from = new Date();
+        Date to = new Date(from.getTime() + 365 * 86400000l); //1 year
+        CertificateValidity interval = new CertificateValidity(from, to);
+        BigInteger sn = new BigInteger(64, new SecureRandom());
+        X500Name owner = new X500Name("CN=localhost");
+
+        info.set(X509CertInfo.VALIDITY, interval);
+        info.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(sn));
+        info.set(X509CertInfo.SUBJECT, new CertificateSubjectName(owner));
+        info.set(X509CertInfo.ISSUER, new CertificateIssuerName(owner));
+        info.set(X509CertInfo.KEY, new CertificateX509Key(keyPair.getPublic()));
+        info.set(X509CertInfo.VERSION, new CertificateVersion(CertificateVersion.V3));
+        AlgorithmId algo = new AlgorithmId(AlgorithmId.md5WithRSAEncryption_oid);
+        info.set(X509CertInfo.ALGORITHM_ID, new CertificateAlgorithmId(algo));
+
+        // Sign the cert to identify the algorithm that's used.
+        X509CertImpl cert = new X509CertImpl(info);
+        cert.sign(keyPair.getPrivate(), "SHA256withRSA");
+
+        // Update the algorithm and sign again.
+        algo = (AlgorithmId)cert.get(X509CertImpl.SIG_ALG);
+        info.set(CertificateAlgorithmId.NAME + "." + CertificateAlgorithmId.ALGORITHM, algo);
+        cert = new X509CertImpl(info);
+        cert.sign(keyPair.getPrivate(), "SHA256withRSA");
+        cert.verify(keyPair.getPublic());
+    }
+}

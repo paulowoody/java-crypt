@@ -1,0 +1,64 @@
+//
+// https://metamug.com/article/security/jwt-java-tutorial-create-verify.html#:~:text=Header%20and%20Payload%20both%20are%20JSON.%20They%20need,%2B%20%22.%22%20%2B%20base64%28payload%29%20%2B%20%22.%22%20%2B%20signature%3B
+// https://www.baeldung.com/java-hmac
+//
+package net.perseity;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import java.util.Calendar;
+import java.util.Date;
+
+public class Token {
+    private static final ObjectMapper mapper = new ObjectMapper();
+    private String header;
+    private String payload;
+    private String signature;
+
+    public Token() throws JsonProcessingException {
+        Calendar now = Calendar.getInstance();
+        Date issuedAt = now.getTime();
+        now.add(Calendar.MINUTE, 5);
+        Date expiryDate = now.getTime();
+
+        header = "{" +
+                 " \"alg\" : \"HS256\"," +
+                 " \"typ\" : \"JWT\"" +
+                "}";
+
+        payload = "{" +
+                "  \"sub\": \"My Details\"," +
+                "  \"iss\": \"perseity.net\"," +
+                "  \"exp\": " + expiryDate + "," +
+                "  \"userId\": \"007\"," +
+                "  \"iat\": " + issuedAt + "," +
+                "  \"jti\": \"b44bd6c6-f128-4415-8458-6d8b4bc98e4a\"" +
+                "}";
+    }
+
+    private String b64UrlEncode(byte[] byteArray) {
+        Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
+        return encoder.encodeToString(byteArray);
+    }
+
+    private byte[] b64UrlDecode(String string) {
+        Base64.Decoder decoder = Base64.getUrlDecoder();
+        return decoder.decode(string.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private String getSigned(String message, String secret) throws NoSuchAlgorithmException, InvalidKeyException {
+      byte[] hash = secret.getBytes(StandardCharsets.UTF_8);
+      Mac sha256Hmac = Mac.getInstance("HmacSHA256");
+      SecretKeySpec secretKey = new SecretKeySpec(hash, "HmacSHA256");
+      sha256Hmac.init(secretKey);
+      byte[] signedBytes = sha256Hmac.doFinal(message.getBytes(StandardCharsets.UTF_8));
+      return b64UrlEncode(signedBytes);
+    }
+}

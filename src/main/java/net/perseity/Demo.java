@@ -1,0 +1,107 @@
+package net.perseity;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.io.IOException;
+import java.security.*;
+import java.security.Provider.Service;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Set;
+import java.util.TreeSet;
+
+
+public class Demo {
+    private static final Logger LOGGER = LogManager.getLogger(Demo.class);
+    private static final boolean DEBUG = false;
+
+    public static void main(String[] args) throws RuntimeException {
+        if (DEBUG) {
+            // display available algorithms
+            try {
+                Set<String> cipherAlgorithms = new TreeSet<>();
+                for (Provider provider : Security.getProviders()) {
+                    provider.getServices().stream().filter(s -> "Cipher".equals(s.getType())).map(Service::getAlgorithm)
+                            .forEach(cipherAlgorithms::add);
+                }
+                LOGGER.debug("Ciphers:");
+                cipherAlgorithms.forEach(LOGGER::debug);
+
+                TreeSet<String> sigAlgorithms = new TreeSet<>();
+                for (Provider provider : Security.getProviders()) {
+                    provider.getServices().stream().filter(s -> "Signature".equals(s.getType())).map(
+                                Service::getAlgorithm)
+                            .forEach(sigAlgorithms::add);
+                }
+                LOGGER.debug("Signatures:");
+                sigAlgorithms.forEach(LOGGER::debug);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // main processing
+        try {
+            LOGGER.info("Started...");
+
+            LOGGER.info("Creating sender and recipient key pairs...");
+            MyKeyPair myKey = new MyKeyPair();
+            myKey.saveKeys("myKey.pub", "myKey.key");
+            myKey.loadKeys("myKey.pub", "myKey.key");
+            LOGGER.info("(myKey) Private KeyID: {}", myKey.getPrivateKeyId());
+            LOGGER.info("(myKey) Public KeyID: {}", myKey.getPublicKeyId());
+
+            MyKeyPair yourKey = new MyKeyPair();
+            yourKey.saveKeys("yourKey.pub", "yourKey.key");
+            yourKey.loadKeys("yourKey.pub", "yourKey.key");
+            LOGGER.info("(yourKey) Private KeyID: {}", yourKey.getPrivateKeyId());
+            LOGGER.info("(yourKey) Public KeyID: {}", yourKey.getPublicKeyId());
+
+            System.out.println();
+            LOGGER.info("Sender creates shared secret...");
+            MyCrypt myCrypt = new MyCrypt();
+            String sharedSecret = myCrypt.getSecretKey();
+            LOGGER.info("Shared Secret: {}", sharedSecret);
+
+            LOGGER.info("Sender encrypts shared secret using the recipient's public key...");
+            String encryptedSharedSecret = yourKey.getEncrypted(sharedSecret);
+            LOGGER.info("Encrypted Secret: {}", encryptedSharedSecret);
+            LOGGER.info("Sender exchanges encrypted shared secret with recipient...\n");
+
+            LOGGER.info("Recipient decrypts shared secret using their private key...");
+            String decryptedSharedSecret = yourKey.getDecrypted(encryptedSharedSecret);
+            LOGGER.info("Decrypted Secret: {}", decryptedSharedSecret);
+            LOGGER.info("Recipient encrypts secret message using the decrypted shared secret...");
+            MyCrypt yourCrypt = new MyCrypt();
+            yourCrypt.setSecretKey(decryptedSharedSecret);
+            String message = "This is a secret message";
+            String encrypted = yourCrypt.encrypt(message);
+            LOGGER.info("Encrypted Message: {}", encrypted);
+            LOGGER.info("Recipient signs secret message using their private key...");
+            String signature = yourKey.getSignature(encrypted);
+            LOGGER.info("Signature: {}", signature);
+            LOGGER.info("Recipient exchanges encrypted message and signature with original sender...\n");
+
+            LOGGER.info("Original sender verifies the signature is valid...");
+            boolean isVerified = yourKey.isSignatureValid(encrypted, signature);
+            if (isVerified) {
+                LOGGER.info("Signature is verified");
+            } else {
+                LOGGER.warn("Signature is not verified");
+            }
+            LOGGER.info("Original sender decrypts the encrypted secret message...");
+            String decrypted = myCrypt.decrypt(encrypted);
+            LOGGER.info("Decrypted Message: {}", decrypted);
+            assert message.equals(decrypted);
+        } catch (InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException |
+                 NoSuchAlgorithmException | IOException | InvalidKeySpecException | BadPaddingException |
+                 SignatureException | InvalidKeyException e) {
+            throw new RuntimeException(e);
+        } finally {
+            LOGGER.info("Finished.");
+        }
+    }
+}

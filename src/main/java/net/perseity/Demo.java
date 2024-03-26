@@ -74,12 +74,13 @@ public class Demo {
             LOGGER.info("Recipient decrypts shared secret using their private key...");
             String decryptedSharedSecret = yourKey.getDecrypted(encryptedSharedSecret);
             LOGGER.info("Decrypted Secret: {}", decryptedSharedSecret);
+
             LOGGER.info("Recipient encrypts secret message using the decrypted shared secret...");
-            MyCrypt yourCrypt = new MyCrypt();
-            yourCrypt.setSecretKey(decryptedSharedSecret);
+            MyCrypt yourCrypt = new MyCrypt(decryptedSharedSecret);
             String message = "This is a secret message";
             String encrypted = yourCrypt.encrypt(message);
             LOGGER.info("Encrypted Message: {}", encrypted);
+
             LOGGER.info("Recipient signs secret message using their private key...");
             String signature = yourKey.getSignature(encrypted);
             LOGGER.info("Signature: {}", signature);

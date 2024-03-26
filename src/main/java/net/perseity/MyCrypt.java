@@ -12,7 +12,6 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
-import java.util.Base64;
 
 public class MyCrypt {
     private static final int KEY_SIZE = 256;
@@ -24,7 +23,11 @@ public class MyCrypt {
     private SecretKey secretKey;
 
     public MyCrypt() throws NoSuchAlgorithmException {
-        generateSecretKey();
+        secretKey = generateSecretKey();
+    }
+
+    public MyCrypt(String b64Key) throws NoSuchAlgorithmException {
+        setSecretKey(b64Key);
     }
 
     private byte[] generateIv() throws NoSuchAlgorithmException {
@@ -34,20 +37,10 @@ public class MyCrypt {
         return iv;
     }
 
-    private void generateSecretKey() throws NoSuchAlgorithmException {
+    private SecretKey generateSecretKey() throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(KEY_SIZE);
-        secretKey = keyGenerator.generateKey();
-    }
-
-    private String b64Encode(byte[] byteArray) {
-        Base64.Encoder encoder = Base64.getEncoder();
-        return new String(encoder.encode(byteArray), StandardCharsets.UTF_8);
-    }
-
-    private byte[] b64Decode(String string) {
-        Base64.Decoder decoder = Base64.getDecoder();
-        return decoder.decode(string.getBytes(StandardCharsets.UTF_8));
+        return keyGenerator.generateKey();
     }
 
     private byte[] generateSalt() throws NoSuchAlgorithmException {
@@ -66,11 +59,11 @@ public class MyCrypt {
     }
 
     public String getSecretKey() {
-        return b64Encode(secretKey.getEncoded());
+        return Util.b64Encode(secretKey.getEncoded());
     }
 
     public void setSecretKey(String b64Key) {
-        secretKey = new SecretKeySpec(b64Decode(b64Key), "AES");
+        secretKey = new SecretKeySpec(Util.b64Decode(b64Key), "AES");
     }
 
     public String encrypt(String plaintext) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
@@ -85,11 +78,11 @@ public class MyCrypt {
         byte[] encrypted = new byte[iv.length + ciphertext.length];
         System.arraycopy(iv, 0, encrypted, 0, iv.length);
         System.arraycopy(ciphertext, 0, encrypted, iv.length, ciphertext.length);
-        return b64Encode(encrypted);
+        return Util.b64Encode(encrypted);
     }
 
     public String decrypt(String ciphertext) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        byte[] ciphertextBytes = b64Decode(ciphertext);
+        byte[] ciphertextBytes = Util.b64Decode(ciphertext);
         Cipher cipher = Cipher.getInstance(AES_GCM_NOPADDING);
         int tLen = cipher.getBlockSize() * Byte.SIZE;
 

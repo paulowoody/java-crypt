@@ -43,7 +43,7 @@ public class MyKeyPair {
     }
 
     public String getDecrypted(String encrypted) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        byte[] decodedBytes = b64Decode(encrypted);
+        byte[] decodedBytes = Util.b64Decode(encrypted);
         Cipher cipher = Cipher.getInstance(CYPHER);
         cipher.init(Cipher.DECRYPT_MODE, getPrivateKey());
         byte[] decryptedBytes = cipher.doFinal(decodedBytes);
@@ -55,11 +55,11 @@ public class MyKeyPair {
         cipher.init(Cipher.ENCRYPT_MODE, getPublicKey());
         byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
         byte[] encryptedBytes = cipher.doFinal(messageBytes);
-        return b64Encode(encryptedBytes);
+        return Util.b64Encode(encryptedBytes);
     }
 
     public boolean isSignatureValid(String message, String signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, InvalidAlgorithmParameterException {
-        byte[] signatureBytes = b64Decode(signature);
+        byte[] signatureBytes = Util.b64Decode(signature);
         byte[] messageBytes = message.getBytes();
         Signature signatureVerifier = Signature.getInstance(ALGORITHM);
         MGF1ParameterSpec mgf1Spec = MGF1ParameterSpec.SHA256;
@@ -80,17 +80,7 @@ public class MyKeyPair {
         byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
         signature.update(messageBytes);
         byte[] signedBytes = signature.sign();
-        return b64Encode(signedBytes);
-    }
-
-    private String b64Encode(byte[] byteArray) {
-        Base64.Encoder encoder = Base64.getEncoder();
-        return encoder.encodeToString(byteArray);
-    }
-
-    private byte[] b64Decode(String string) {
-        Base64.Decoder decoder = Base64.getDecoder();
-        return decoder.decode(string.getBytes(StandardCharsets.UTF_8));
+        return Util.b64Encode(signedBytes);
     }
 
     public PrivateKey getPrivateKey() {
@@ -107,28 +97,28 @@ public class MyKeyPair {
     }
 
     private static void saveKey(Key key, String filename) throws IOException {
-            try (Writer keyFile = new FileWriter(filename)) {
-                Base64.Encoder encoder = Base64.getMimeEncoder(64, System.lineSeparator().getBytes());
-                String encodedKey = encoder.encodeToString(key.getEncoded());
+        try (Writer keyFile = new FileWriter(filename)) {
+            Base64.Encoder mimeEncoder = Base64.getMimeEncoder(64, System.lineSeparator().getBytes());
+            String encodedKey = mimeEncoder.encodeToString(key.getEncoded());
 
-                // Write the header, followed by a newline
-                keyFile.write(getHeader(key));
-                keyFile.write(System.lineSeparator());
+            // Write the header, followed by a newline
+            keyFile.write(getPemHeader(key));
+            keyFile.write(System.lineSeparator());
 
-                // Write the Base64-encoded content
-                keyFile.write(encodedKey);
+            // Write the Base64-encoded content
+            keyFile.write(encodedKey);
 
-                // Write the footer, followed by a newline
-                keyFile.write(System.lineSeparator());
-                keyFile.write(getFooter(key));
-            }
+            // Write the footer, followed by a newline
+            keyFile.write(System.lineSeparator());
+            keyFile.write(getPemFooter(key));
+        }
     }
 
-    private static String getHeader(Object key) {
+    private static String getPemHeader(Object key) {
         return (key instanceof PublicKey) ? PUBLIC_HEADER : PRIVATE_HEADER;
     }
 
-    private static String getFooter(Object key) {
+    private static String getPemFooter(Object key) {
         return (key instanceof PublicKey) ? PUBLIC_FOOTER : PRIVATE_FOOTER;
     }
 
@@ -136,8 +126,8 @@ public class MyKeyPair {
         String publicKeyString = loadKey(publicKeyFile);
         String privateKeyString = loadKey(privateKeyFile);
 
-        byte[] publicKeyBytes = b64Decode(publicKeyString);
-        byte[] privateKeyBytes = b64Decode(privateKeyString);
+        byte[] publicKeyBytes = Util.b64Decode(publicKeyString);
+        byte[] privateKeyBytes = Util.b64Decode(privateKeyString);
 
         KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
         PublicKey publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
@@ -162,9 +152,6 @@ public class MyKeyPair {
         // Normalize line endings and remove leading and trailing whitespace
         return base64Content.replace("\r\n", "").replace("\n", "").trim();
     }
-
-
-
 
     public String getPublicKeyId() throws NoSuchAlgorithmException {
         KeySpec publicKeySpec = getKeySpec(key.getPublic());

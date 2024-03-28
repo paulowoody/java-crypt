@@ -59,11 +59,11 @@ public class MyCrypt {
     }
 
     public String getSecretKey() {
-        return Util.b64Encode(secretKey.getEncoded());
+        return Helper.b64Encode(secretKey.getEncoded());
     }
 
     public void setSecretKey(String b64Key) {
-        secretKey = new SecretKeySpec(Util.b64Decode(b64Key), "AES");
+        secretKey = new SecretKeySpec(Helper.b64Decode(b64Key), "AES");
     }
 
     public String encrypt(String plaintext) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
@@ -78,11 +78,11 @@ public class MyCrypt {
         byte[] encrypted = new byte[iv.length + ciphertext.length];
         System.arraycopy(iv, 0, encrypted, 0, iv.length);
         System.arraycopy(ciphertext, 0, encrypted, iv.length, ciphertext.length);
-        return Util.b64Encode(encrypted);
+        return Helper.b64Encode(encrypted);
     }
 
     public String decrypt(String ciphertext) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        byte[] ciphertextBytes = Util.b64Decode(ciphertext);
+        byte[] ciphertextBytes = Helper.b64Decode(ciphertext);
         Cipher cipher = Cipher.getInstance(AES_GCM_NOPADDING);
         int tLen = cipher.getBlockSize() * Byte.SIZE;
 

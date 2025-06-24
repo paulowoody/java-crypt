@@ -1,7 +1,7 @@
 <Configuration status="info" name="java-crypt" packages="">
     <Loggers>
         <Root level="INFO">
-            <AppenderRef ref="stdout" />
+            <AppenderRef ref="stdout"/>
         </Root>
     </Loggers>
     <Appenders>

@@ -24,17 +24,14 @@ public class Demo {
             try {
                 Set<String> cipherAlgorithms = new TreeSet<>();
                 for (Provider provider : Security.getProviders()) {
-                    provider.getServices().stream().filter(s -> "Cipher".equals(s.getType())).map(Service::getAlgorithm)
-                            .forEach(cipherAlgorithms::add);
+                    provider.getServices().stream().filter(s -> "Cipher".equals(s.getType())).map(Service::getAlgorithm).forEach(cipherAlgorithms::add);
                 }
                 LOGGER.debug("Ciphers:");
                 cipherAlgorithms.forEach(LOGGER::debug);
 
                 TreeSet<String> sigAlgorithms = new TreeSet<>();
                 for (Provider provider : Security.getProviders()) {
-                    provider.getServices().stream().filter(s -> "Signature".equals(s.getType())).map(
-                                Service::getAlgorithm)
-                            .forEach(sigAlgorithms::add);
+                    provider.getServices().stream().filter(s -> "Signature".equals(s.getType())).map(Service::getAlgorithm).forEach(sigAlgorithms::add);
                 }
                 LOGGER.debug("Signatures:");
                 sigAlgorithms.forEach(LOGGER::debug);

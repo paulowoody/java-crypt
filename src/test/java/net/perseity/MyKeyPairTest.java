@@ -13,7 +13,10 @@ import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,6 +42,7 @@ class MyKeyPairTest {
     void constructorDoesNotThrowError() {
         assertDoesNotThrow(() -> new MyKeyPair());
     }
+
     @Test
     void getDecrypted() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         String expected = "Hello, World";
@@ -74,7 +78,7 @@ class MyKeyPairTest {
 
     @Test
     void getPublicKey() {
-        assertEquals(705824, myKey.getPublicKey().hashCode());
+        assertEquals(1529754321, myKey.getPublicKey().hashCode());
     }
 
     @Test

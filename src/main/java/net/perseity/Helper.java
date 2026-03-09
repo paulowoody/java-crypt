@@ -20,6 +20,8 @@ public class Helper {
     public static final String PUBLIC_HEADER = String.format("-----BEGIN %s PUBLIC KEY-----", MyKeyPair.ALGORITHM);
     public static final String PRIVATE_FOOTER = String.format("-----END %s PRIVATE KEY-----", MyKeyPair.ALGORITHM);
     public static final String PRIVATE_HEADER = String.format("-----BEGIN %s PRIVATE KEY-----", MyKeyPair.ALGORITHM);
+    public static final String CERT_FOOTER = "-----END CERTIFICATE-----";
+    public static final String CERT_HEADER = "-----BEGIN CERTIFICATE-----";
 
     /**
      * Standard Base64 Encoding (RFC 4648). Used primarily for standard cryptography payloads.
@@ -52,6 +54,32 @@ public class Helper {
     public static byte[] b64UrlDecode(String string) {
         Base64.Decoder decoder = Base64.getUrlDecoder();
         return decoder.decode(string.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Reads an X.509 Certificate from a PEM file.
+     */
+    public static java.security.cert.X509Certificate readCert(String certFile) throws IOException, java.security.cert.CertificateException {
+        String certString = loadKey(certFile);
+        byte[] certBytes = b64Decode(certString);
+        java.security.cert.CertificateFactory factory = java.security.cert.CertificateFactory.getInstance("X.509");
+        return (java.security.cert.X509Certificate) factory.generateCertificate(new java.io.ByteArrayInputStream(certBytes));
+    }
+
+    /**
+     * Saves an X.509 Certificate to a PEM file.
+     */
+    public static void saveCert(java.security.cert.X509Certificate cert, String filename) throws IOException, java.security.cert.CertificateEncodingException {
+        try (Writer certFile = new FileWriter(filename)) {
+            Base64.Encoder mimeEncoder = Base64.getMimeEncoder(64, System.lineSeparator().getBytes());
+            String encodedCert = mimeEncoder.encodeToString(cert.getEncoded());
+
+            certFile.write(CERT_HEADER);
+            certFile.write(System.lineSeparator());
+            certFile.write(encodedCert);
+            certFile.write(System.lineSeparator());
+            certFile.write(CERT_FOOTER);
+        }
     }
 
     /**
@@ -127,7 +155,9 @@ public class Helper {
      */
     private static String extractBase64Content(String pemContent) {
         // Remove headers and footers
-        String base64Content = pemContent.replace(PRIVATE_HEADER, "").replace(PRIVATE_FOOTER, "").replace(PUBLIC_HEADER, "").replace(PUBLIC_FOOTER, "");
+        String base64Content = pemContent.replace(PRIVATE_HEADER, "").replace(PRIVATE_FOOTER, "")
+                .replace(PUBLIC_HEADER, "").replace(PUBLIC_FOOTER, "")
+                .replace(CERT_HEADER, "").replace(CERT_FOOTER, "");
 
         // Normalize line endings and remove leading and trailing whitespace
         return base64Content.replace("\r\n", "").replace("\n", "").trim();

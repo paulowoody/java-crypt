@@ -144,9 +144,31 @@ public class Demo {
             }
             assert !isHackerAuthorized;
 
-        } catch (InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException |
-                 NoSuchAlgorithmException | IOException | InvalidKeySpecException | BadPaddingException |
-                 SignatureException | InvalidKeyException e) {
+            System.out.println();
+            LOGGER.info("=== 5. Real-World TLS Certificate Scenario ===");
+            LOGGER.info("[Server/Alice] Wants to host a secure HTTPS website (e.g., alice.perseity.net).");
+            LOGGER.info("[Server/Alice] Generates a self-signed TLS Certificate using her RSA Key Pair...");
+            
+            String domain = "CN=alice.perseity.net";
+            MyTLSCert tlsCert = new MyTLSCert(myKeyPair, domain, 365);
+            Helper.saveCert(tlsCert.getCertificate(), "alice-cert.pem");
+            LOGGER.info("[Server/Alice] Certificate generated for {} and saved to alice-cert.pem", domain);
+            
+            LOGGER.info("[Client/Bob] Connects to the server and downloads the TLS Certificate...");
+            java.security.cert.X509Certificate downloadedCert = Helper.readCert("alice-cert.pem");
+            MyTLSCert bobViewOfCert = new MyTLSCert(downloadedCert);
+            
+            LOGGER.info("[Client/Bob] Verifies the certificate's signature...");
+            // In a real scenario with a self-signed cert, Bob must already trust Alice's public key or the cert itself.
+            boolean isCertValid = bobViewOfCert.verifySignature(myKeyPair.getPublicKey());
+            if (isCertValid) {
+                LOGGER.info("[Client/Bob] Certificate is VALID and trusted. Proceeding with secure connection.");
+            } else {
+                LOGGER.warn("[Client/Bob] Certificate verification FAILED. Connection aborted.");
+            }
+            assert isCertValid;
+
+        } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
             LOGGER.info("Finished.");

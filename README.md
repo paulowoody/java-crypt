@@ -34,6 +34,15 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 15. Bob verifies the digital signature of the certificate using Alice's trusted public key to ensure a secure, un-tampered connection.
 16. A Hacker (Eve) generates a forged certificate to impersonate Alice, but Bob detects the invalid signature and rejects the connection.
 
+**Part 6: Secure Email Scenario (Custom Implementation without Third-Party CMS)**
+*Note: True S/MIME compliance requires formatting the cryptographic payloads using a complex standard called CMS (Cryptographic Message Syntax, or PKCS#7). The Java Standard Library does not have internal support for generating CMS `EnvelopedData` (Encryption). Therefore, to create a fully S/MIME compliant application that standard email clients can natively read, a third-party library like BouncyCastle is required. This project demonstrates the exact same cryptographic concepts (Authenticity, Integrity, and Confidentiality) using only standard Java RSA/AES.*
+17. Alice creates a standard MimeMessage and encrypts/signs it using standard AES and RSA.
+18. She encrypts the message payload using AES, and encrypts the AES session key using Bob's public RSA key.
+19. Bob receives the encrypted message and decrypts the session key using his Private Key, and uses it to decrypt the body.
+20. Bob verifies the signature on the decrypted content against Alice's public key to confirm she sent it and it hasn't been tampered with.
+21. A Hacker (Eve) intercepts the encrypted email in transit and attempts to decrypt it, but fails because she does not possess Bob's private key.
+22. A Hacker (Eve) attempts to forge an email claiming to be from Alice by signing it with her own key and encrypting it for Bob. Bob decrypts it, but detects the forgery because the signature verification fails against Alice's known public key.
+
 ### Core Cryptographic Classes
 
 - `MyKeyPair`: Handles asymmetric cryptography (Public/Private Key Pairs) using RSA. Used for key exchange and digital signatures.
@@ -41,6 +50,7 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 - `MyJwt`: Handles the creation and verification of JSON Web Tokens using HMAC SHA-256 signatures.
 - `MyTLSCert`: Handles the creation, signing, and verification of TLS (X.509) Certificates using internal `sun.security.x509` APIs.
   - *Note: Because standard Java lacks a public API for certificate generation, this project intentionally uses internal JVM classes to avoid external dependencies. The `pom.xml` configures compiler arguments and jar manifest entries (`Add-Exports: java.base/sun.security.x509`) to bypass the Java Module System restrictions.*
+- `MySecureEmail`: Demonstrates secure email concepts (signing, encrypting, decrypting, verifying) using standard Java cryptography instead of heavy third-party S/MIME libraries.
 - `Helper`: Provides common Base64 (Standard and URL-Safe) encoding/decoding and PEM file operations for Keys and Certificates.
 
 ### Building and Running
@@ -60,6 +70,9 @@ java -jar target/java-crypt-0.1.0-SNAPSHOT-assembly.jar
 ## Changes
 
 - 0.1.0-SNAPSHOT
+    - 2026-03-10, Added Secure Email functions with pure standard library `MySecureEmail` implementation.
+    - 2026-03-10, Added Hacker/Eve interception and forgery scenarios to both the TLS and Secure Email examples.
+    - 2026-03-10, Updated `Demo.java` to output secure email payloads as `.eml` files to disk for inspection.
     - 2026-03-09, Added TLS/X.509 self-signed certificate generation using native Java libraries (`sun.security.x509`).
     - 2026-03-09, Added JWT/HMAC support, real-world scenario narrative, extensive Javadocs, and URL-Safe Base64 helpers.
     - 2026-03-09, Update documentation with demonstration flow and build instructions.

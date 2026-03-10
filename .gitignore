@@ -43,3 +43,4 @@ build/
 /*.key
 /*.pub
 /alice-cert.pem
+*.eml

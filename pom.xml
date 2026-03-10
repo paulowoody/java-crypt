@@ -23,7 +23,7 @@
                     <target>24</target>
                     <compilerArgs>
                         <arg>-proc:none</arg>
-                        <arg>-Xlint:unchecked</arg>
+                        <arg>-Xlint:all</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>

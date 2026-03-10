@@ -43,14 +43,14 @@ class MyKeyPairTest {
     void getDecrypted() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         String expected = "Hello, World";
         String encrypted = "qANE9Vd9xVA60NoO426p1f3/mhGwmLPFIOAMs17HJdn+pXezJZf70UG+vCRnj/wP/FsDQp/RCPt+9YuwJQ4eXxfPwIO9adorxg7mrsBrmsT3TC7Cb0BlAXPU67eZ3uTH4ZVpfXdSHpy78Qt17Fd8KYgZCnIk/6Xv1EpfzIe0xp0=";
-        String decrypted = myKey.getDecrypted(encrypted);
+        String decrypted = myKey.decrypt(encrypted);
         assertEquals(expected, decrypted);
     }
 
     @Test
     void getEncrypted() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         String message = "Hello, World";
-        String encrypted = myKey.getEncrypted(message);
+        String encrypted = myKey.encrypt(message);
         assertEquals(172, encrypted.length());
     }
 
@@ -63,7 +63,7 @@ class MyKeyPairTest {
 
     @Test
     void getSigned() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
-        String signature = myKey.getSignature("Hello, World");
+        String signature = myKey.sign("Hello, World");
         assertEquals(172, signature.length());
     }
 

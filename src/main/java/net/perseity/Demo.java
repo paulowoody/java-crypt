@@ -48,17 +48,17 @@ public class Demo {
             LOGGER.info("Started...");
 
             LOGGER.info("Creating sender and recipient key pairs...");
-            MyKeyPair myKey = new MyKeyPair();
-            myKey.saveKeys("myKey.pub", "myKey.key");
-            myKey.loadKeys("myKey.pub", "myKey.key");
-            LOGGER.info("(myKey) Private KeyID: {}", myKey.getPrivateKeyId());
-            LOGGER.info("(myKey) Public KeyID: {}", myKey.getPublicKeyId());
+            MyKeyPair myKeyPair = new MyKeyPair();
+            Helper.saveKeyPair(myKeyPair, "myKey.pub", "myKey.key");
+            Helper.loadKeyPair(myKeyPair, "myKey.pub", "myKey.key");
+            LOGGER.info("(myKey) Private KeyID: {}", myKeyPair.getPrivateKeyId());
+            LOGGER.info("(myKey) Public KeyID: {}", myKeyPair.getPublicKeyId());
 
-            MyKeyPair yourKey = new MyKeyPair();
-            yourKey.saveKeys("yourKey.pub", "yourKey.key");
-            yourKey.loadKeys("yourKey.pub", "yourKey.key");
-            LOGGER.info("(yourKey) Private KeyID: {}", yourKey.getPrivateKeyId());
-            LOGGER.info("(yourKey) Public KeyID: {}", yourKey.getPublicKeyId());
+            MyKeyPair yourKeyPair = new MyKeyPair();
+            Helper.saveKeyPair(yourKeyPair, "yourKey.pub", "yourKey.key");
+            Helper.loadKeyPair(yourKeyPair, "yourKey.pub", "yourKey.key");
+            LOGGER.info("(yourKey) Private KeyID: {}", yourKeyPair.getPrivateKeyId());
+            LOGGER.info("(yourKey) Public KeyID: {}", yourKeyPair.getPublicKeyId());
 
             System.out.println();
             LOGGER.info("Sender creates shared secret...");
@@ -67,12 +67,12 @@ public class Demo {
             LOGGER.info("Shared Secret: {}", sharedSecret);
 
             LOGGER.info("Sender encrypts shared secret using the recipient's public key...");
-            String encryptedSharedSecret = yourKey.getEncrypted(sharedSecret);
+            String encryptedSharedSecret = yourKeyPair.encrypt(sharedSecret);
             LOGGER.info("Encrypted Secret: {}", encryptedSharedSecret);
             LOGGER.info("Sender exchanges encrypted shared secret with recipient...\n");
 
             LOGGER.info("Recipient decrypts shared secret using their private key...");
-            String decryptedSharedSecret = yourKey.getDecrypted(encryptedSharedSecret);
+            String decryptedSharedSecret = yourKeyPair.decrypt(encryptedSharedSecret);
             LOGGER.info("Decrypted Secret: {}", decryptedSharedSecret);
 
             LOGGER.info("Recipient encrypts secret message using the decrypted shared secret...");
@@ -82,12 +82,12 @@ public class Demo {
             LOGGER.info("Encrypted Message: {}", encrypted);
 
             LOGGER.info("Recipient signs secret message using their private key...");
-            String signature = yourKey.getSignature(encrypted);
+            String signature = yourKeyPair.sign(encrypted);
             LOGGER.info("Signature: {}", signature);
             LOGGER.info("Recipient exchanges encrypted message and signature with original sender...\n");
 
             LOGGER.info("Original sender verifies the signature is valid...");
-            boolean isVerified = yourKey.isSignatureValid(encrypted, signature);
+            boolean isVerified = yourKeyPair.isSignatureValid(encrypted, signature);
             if (isVerified) {
                 LOGGER.info("Signature is verified");
             } else {

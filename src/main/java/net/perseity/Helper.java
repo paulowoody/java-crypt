@@ -12,6 +12,12 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
+import javax.activation.CommandMap;
+import javax.activation.MailcapCommandMap;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
+
 /**
  * Utility class providing common Base64 encoding/decoding and PEM file operations.
  */
@@ -70,15 +76,30 @@ public class Helper {
      * Saves an X.509 Certificate to a PEM file.
      */
     public static void saveCert(java.security.cert.X509Certificate cert, String filename) throws IOException, java.security.cert.CertificateEncodingException {
-        try (Writer certFile = new FileWriter(filename)) {
-            Base64.Encoder mimeEncoder = Base64.getMimeEncoder(64, System.lineSeparator().getBytes());
-            String encodedCert = mimeEncoder.encodeToString(cert.getEncoded());
+        writePem(filename, CERT_HEADER, CERT_FOOTER, cert.getEncoded());
+    }
 
-            certFile.write(CERT_HEADER);
-            certFile.write(System.lineSeparator());
-            certFile.write(encodedCert);
-            certFile.write(System.lineSeparator());
-            certFile.write(CERT_FOOTER);
+    /**
+     * Serializes a single cryptographic Key into PEM (Privacy-Enhanced Mail) format 
+     * and writes it to a file. PEM format wraps Base64-encoded data in explicit header and footer lines.
+     */
+    private static void saveKey(Key key, String filename) throws IOException {
+        writePem(filename, getPemHeader(key), getPemFooter(key), key.getEncoded());
+    }
+
+    /**
+     * Shared utility to write Base64 encoded data with PEM headers and footers to a file.
+     */
+    private static void writePem(String filename, String header, String footer, byte[] data) throws IOException {
+        try (Writer fileWriter = new FileWriter(filename)) {
+            Base64.Encoder mimeEncoder = Base64.getMimeEncoder(64, System.lineSeparator().getBytes());
+            String encodedData = mimeEncoder.encodeToString(data);
+
+            fileWriter.write(header);
+            fileWriter.write(System.lineSeparator());
+            fileWriter.write(encodedData);
+            fileWriter.write(System.lineSeparator());
+            fileWriter.write(footer);
         }
     }
 
@@ -111,28 +132,6 @@ public class Helper {
     public static void saveKeyPair(MyKeyPair keyPair, String publicKeyFile, String privateKeyFile) throws IOException {
         saveKey(keyPair.getPublicKey(), publicKeyFile);
         saveKey(keyPair.getPrivateKey(), privateKeyFile);
-    }
-
-    /**
-     * Serializes a single cryptographic Key into PEM (Privacy-Enhanced Mail) format 
-     * and writes it to a file. PEM format wraps Base64-encoded data in explicit header and footer lines.
-     */
-    private static void saveKey(Key key, String filename) throws IOException {
-        try (Writer keyFile = new FileWriter(filename)) {
-            Base64.Encoder mimeEncoder = Base64.getMimeEncoder(64, System.lineSeparator().getBytes());
-            String encodedKey = mimeEncoder.encodeToString(key.getEncoded());
-
-            // Write the header, followed by a newline
-            keyFile.write(getPemHeader(key));
-            keyFile.write(System.lineSeparator());
-
-            // Write the Base64-encoded content
-            keyFile.write(encodedKey);
-
-            // Write the footer, followed by a newline
-            keyFile.write(System.lineSeparator());
-            keyFile.write(getPemFooter(key));
-        }
     }
 
     /**
@@ -170,5 +169,33 @@ public class Helper {
         byte[] keyBytes = Files.readAllBytes(Paths.get(filePath));
         String pemContent = new String(keyBytes);
         return extractBase64Content(pemContent);
+    }
+
+    /**
+     * Saves a MimeMultipart to a file on disk.
+     */
+    public static void saveMimeMultipart(MimeMultipart multipart, String filename) throws IOException, MessagingException {
+        try (java.io.FileOutputStream fos = new java.io.FileOutputStream(filename)) {
+            multipart.writeTo(fos);
+        }
+    }
+
+    /**
+     * Loads a MimeMultipart from a file on disk.
+     */
+    public static MimeMultipart loadMimeMultipart(String filename) throws IOException, MessagingException {
+        try (java.io.FileInputStream fis = new java.io.FileInputStream(filename)) {
+            return new MimeMultipart(new ByteArrayDataSource(fis, "multipart/mixed"));
+        }
+    }
+
+    /**
+     * Registers MailcapCommandMap to fix missing content handlers when running from a fat jar.
+     */
+    public static void setupMailcap() {
+        MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
+        mc.addMailcap("text/plain;; x-java-content-handler=com.sun.mail.handlers.text_plain");
+        mc.addMailcap("multipart/*;; x-java-content-handler=com.sun.mail.handlers.multipart_mixed");
+        CommandMap.setDefaultCommandMap(mc);
     }
 }

@@ -168,6 +168,24 @@ public class Demo {
             }
             assert isCertValid;
 
+            System.out.println();
+            LOGGER.info("[Hacker/Eve] Wants to impersonate Alice's website and intercept Bob's traffic.");
+            LOGGER.info("[Hacker/Eve] Generates her own RSA Key Pair and a forged TLS Certificate for alice.perseity.net...");
+            MyKeyPair hackerKeyPair = new MyKeyPair();
+            MyTLSCert forgedCert = new MyTLSCert(hackerKeyPair, domain, 365);
+            
+            LOGGER.info("[Client/Bob] Is tricked into connecting to Eve's server and downloads the forged TLS Certificate...");
+            MyTLSCert bobViewOfForgedCert = new MyTLSCert(forgedCert.getCertificate());
+            
+            LOGGER.info("[Client/Bob] Verifies the forged certificate's signature against Alice's trusted public key...");
+            boolean isForgedCertValid = bobViewOfForgedCert.verifySignature(aliceKeyPair.getPublicKey());
+            if (isForgedCertValid) {
+                LOGGER.error("[Client/Bob] Uh oh! The forged certificate was trusted! This shouldn't happen.");
+            } else {
+                LOGGER.info("[Client/Bob] Certificate verification FAILED. The signature doesn't match Alice's public key. Connection aborted.");
+            }
+            assert !isForgedCertValid;
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

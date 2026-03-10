@@ -32,6 +32,7 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 13. A Server (Alice) uses her RSA key pair to generate a self-signed TLS Certificate to secure an HTTPS website.
 14. A Client (Bob) connects and downloads the certificate.
 15. Bob verifies the digital signature of the certificate using Alice's trusted public key to ensure a secure, un-tampered connection.
+16. A Hacker (Eve) generates a forged certificate to impersonate Alice, but Bob detects the invalid signature and rejects the connection.
 
 ### Core Cryptographic Classes
 

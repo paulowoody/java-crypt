@@ -34,7 +34,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
-                    <argLine>--add-exports java.base/sun.security.x509=ALL-UNNAMED</argLine>
+                    <argLine>@{argLine} --add-exports java.base/sun.security.x509=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
 
@@ -81,6 +81,47 @@
                     <execution>
                         <id>default-jar</id>
                         <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.13</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>coverage-summary</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>awk</executable>
+                            <arguments>
+                                <argument>-F,</argument>
+                                <argument>{ instructions += $4 + $5; covered += $5 } END { print "\n[INFO] ========================================================\n[INFO] JaCoCo Total Code Coverage: " int(100*covered/instructions) "% (" covered "/" instructions " instructions)\n[INFO] ========================================================\n" }</argument>
+                                <argument>target/site/jacoco/jacoco.csv</argument>
+                            </arguments>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

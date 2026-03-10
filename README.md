@@ -64,6 +64,11 @@ To compile, run the unit tests, and package the application, run:
 mvn clean package
 ```
 
+To run the unit tests and automatically generate a JaCoCo code coverage report (found in `target/site/jacoco/index.html`), run:
+```bash
+mvn clean test
+```
+
 To run the demonstration and see the narrative flow, execute the built assembly jar:
 ```bash
 java -jar target/java-crypt-0.1.0-SNAPSHOT-assembly.jar

@@ -17,8 +17,8 @@ When a client connects to a server, the server presents its certificate. The cli
 
 ### Generating a Self-Signed Certificate
 ```java
-// 1. Generate an RSA Key Pair for the server
-MyKeyPair serverKeyPair = new MyKeyPair();
+// 1. Generate an RSA (or ECC) Key Pair for the server
+AsymmetricCipher serverKeyPair = new MyKeyPair();
 
 // 2. Generate a Certificate valid for 365 days for a specific domain
 MyTLSCert tlsCert = new MyTLSCert(serverKeyPair, "CN=api.mydomain.com", 365);

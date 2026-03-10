@@ -28,13 +28,13 @@ public class MySecureEmail {
      * @param recipientKeyPair  The recipient's RSA Key Pair (used to encrypt the session key).
      * @return A MimeBodyPart containing the encrypted key and payload.
      */
-    public static MimeMultipart signAndEncrypt(String messageBody, MyKeyPair senderKeyPair, MyKeyPair recipientKeyPair) throws Exception {
+    public static MimeMultipart signAndEncrypt(String messageBody, AsymmetricCipher senderKeyPair, AsymmetricCipher recipientKeyPair) throws Exception {
         // 1. Sign the message
         String signature = senderKeyPair.sign(messageBody);
         String signedMessagePayload = messageBody + "\n\n---SIGNATURE---\n" + signature;
 
         // 2. Encrypt the signed message with a new, random AES key (Symmetric)
-        MyCrypt sessionCrypt = new MyCrypt();
+        SymmetricCipher sessionCrypt = new MyCrypt();
         String sessionSecret = sessionCrypt.getSecretKey();
         String encryptedPayload = sessionCrypt.encrypt(signedMessagePayload);
 
@@ -68,7 +68,7 @@ public class MySecureEmail {
      * @param senderKeyPair     The sender's RSA Key Pair (used to verify the signature).
      * @return A DecryptedEmail object containing the message and signature status.
      */
-    public static DecryptedEmail decryptAndVerify(MimeMultipart encryptedEmail, MyKeyPair recipientKeyPair, MyKeyPair senderKeyPair) throws Exception {
+    public static DecryptedEmail decryptAndVerify(MimeMultipart encryptedEmail, AsymmetricCipher recipientKeyPair, AsymmetricCipher senderKeyPair) throws Exception {
         MimeBodyPart keyPart = (MimeBodyPart) encryptedEmail.getBodyPart(0);
         MimeBodyPart payloadPart = (MimeBodyPart) encryptedEmail.getBodyPart(1);
 
@@ -86,7 +86,7 @@ public class MySecureEmail {
         String sessionSecret = recipientKeyPair.decrypt(encryptedSessionSecret);
 
         // 2. Decrypt the payload using the AES key
-        MyCrypt sessionCrypt = new MyCrypt(sessionSecret);
+        SymmetricCipher sessionCrypt = new MyCrypt(sessionSecret);
         String signedMessagePayload = sessionCrypt.decrypt(encryptedPayload);
 
         // 3. Extract message and signature

@@ -1,6 +1,6 @@
 # MyCrypt
 
-`MyCrypt` handles symmetric encryption and decryption using the **AES** (Advanced Encryption Standard) algorithm in **GCM** (Galois/Counter Mode).
+`MyCrypt` implements the `SymmetricCipher` interface to handle symmetric encryption and decryption using the **AES** (Advanced Encryption Standard) algorithm in **GCM** (Galois/Counter Mode).
 
 ## What is it for?
 Symmetric cryptography uses the **exact same key** to both encrypt and decrypt data. 

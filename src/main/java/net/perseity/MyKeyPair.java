@@ -20,7 +20,7 @@ import java.util.HexFormat;
  * - Private Key: Kept strictly secret. Used to decrypt data sent to you, or to create digital signatures.
  * RSA is mathematically slow, so it's typically used to encrypt small secrets (like AES keys) rather than large messages.
  */
-public class MyKeyPair {
+public class MyKeyPair implements AsymmetricCipher {
     public static final String ALGORITHM = "RSASSA-PSS";
     private static final int SIZE = 1024; // Key size in bits. Note: 1024 is considered weak today; 2048 or 4096 is recommended for production.
     private static final String HASH = "SHA-256";
@@ -28,6 +28,14 @@ public class MyKeyPair {
     private static final String CYPHER = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
 
     private java.security.KeyPair keyPair;
+
+    /**
+     * @return The standard algorithm name.
+     */
+    @Override
+    public String getAlgorithm() {
+        return ALGORITHM;
+    }
 
     /**
      * Generates a brand new, random RSA Public/Private Key Pair.
@@ -44,7 +52,7 @@ public class MyKeyPair {
      * Loads an existing RSA Key Pair from stored Base64 string files.
      */
     public MyKeyPair(String publicKeyFile, String privateKeyFile) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        this.keyPair = Helper.readKeyPair(publicKeyFile, privateKeyFile);
+        this.keyPair = Helper.readKeyPair(publicKeyFile, privateKeyFile, ALGORITHM);
     }
 
     /**

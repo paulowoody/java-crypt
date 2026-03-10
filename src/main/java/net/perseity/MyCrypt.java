@@ -18,7 +18,7 @@ import java.util.Arrays;
  * Symmetric encryption uses the same key (shared secret) for both encrypting and decrypting data.
  * It is much faster than asymmetric (RSA) encryption, making it ideal for encrypting large amounts of data (like messages).
  */
-public class MyCrypt {
+public class MyCrypt implements SymmetricCipher {
     private static final int KEY_SIZE = 256;
     private static final int IV_SIZE = 12; // GCM recommended IV size is 12 bytes
     private static final int SALT_SIZE = 16;

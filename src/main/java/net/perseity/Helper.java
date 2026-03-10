@@ -22,10 +22,6 @@ import javax.mail.util.ByteArrayDataSource;
  * Utility class providing common Base64 encoding/decoding and PEM file operations.
  */
 public class Helper {
-    public static final String PUBLIC_FOOTER = String.format("-----END %s PUBLIC KEY-----", MyKeyPair.ALGORITHM);
-    public static final String PUBLIC_HEADER = String.format("-----BEGIN %s PUBLIC KEY-----", MyKeyPair.ALGORITHM);
-    public static final String PRIVATE_FOOTER = String.format("-----END %s PRIVATE KEY-----", MyKeyPair.ALGORITHM);
-    public static final String PRIVATE_HEADER = String.format("-----BEGIN %s PRIVATE KEY-----", MyKeyPair.ALGORITHM);
     public static final String CERT_FOOTER = "-----END CERTIFICATE-----";
     public static final String CERT_HEADER = "-----BEGIN CERTIFICATE-----";
 
@@ -106,46 +102,46 @@ public class Helper {
     /**
      * Reads a matching Public and Private key from disk.
      */
-    public static KeyPair readKeyPair(String publicKeyFile, String privateKeyFile) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public static KeyPair readKeyPair(String publicKeyFile, String privateKeyFile, String algorithm) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         String publicKeyString = loadKey(publicKeyFile);
         String privateKeyString = loadKey(privateKeyFile);
 
         byte[] publicKeyBytes = b64Decode(publicKeyString);
         byte[] privateKeyBytes = b64Decode(privateKeyString);
 
-        KeyFactory keyFactory = KeyFactory.getInstance(MyKeyPair.ALGORITHM);
+        KeyFactory keyFactory = KeyFactory.getInstance(algorithm);
         PublicKey publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
         PrivateKey privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
         return new KeyPair(publicKey, privateKey);
     }
 
     /**
-     * Helper method to populate an existing MyKeyPair instance with keys loaded from disk.
+     * Helper method to populate an existing AsymmetricCipher instance with keys loaded from disk.
      */
-    public static void loadKeyPair(MyKeyPair keyPair, String publicKeyFile, String privateKeyFile) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        keyPair.setKeyPair(readKeyPair(publicKeyFile, privateKeyFile));
+    public static void loadKeyPair(AsymmetricCipher cipher, String publicKeyFile, String privateKeyFile) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        cipher.setKeyPair(readKeyPair(publicKeyFile, privateKeyFile, cipher.getAlgorithm()));
     }
 
     /**
-     * Saves a KeyPair's public and private keys to separate PEM files on disk.
+     * Saves an AsymmetricCipher's public and private keys to separate PEM files on disk.
      */
-    public static void saveKeyPair(MyKeyPair keyPair, String publicKeyFile, String privateKeyFile) throws IOException {
-        saveKey(keyPair.getPublicKey(), publicKeyFile);
-        saveKey(keyPair.getPrivateKey(), privateKeyFile);
+    public static void saveKeyPair(AsymmetricCipher cipher, String publicKeyFile, String privateKeyFile) throws IOException {
+        saveKey(cipher.getPublicKey(), publicKeyFile);
+        saveKey(cipher.getPrivateKey(), privateKeyFile);
     }
 
     /**
      * Determines the appropriate PEM header based on whether the key is Public or Private.
      */
-    private static String getPemHeader(Object key) {
-        return (key instanceof PublicKey) ? PUBLIC_HEADER : PRIVATE_HEADER;
+    private static String getPemHeader(Key key) {
+        return (key instanceof PublicKey) ? "-----BEGIN PUBLIC KEY-----" : "-----BEGIN PRIVATE KEY-----";
     }
 
     /**
      * Determines the appropriate PEM footer based on whether the key is Public or Private.
      */
-    private static String getPemFooter(Object key) {
-        return (key instanceof PublicKey) ? PUBLIC_FOOTER : PRIVATE_FOOTER;
+    private static String getPemFooter(Key key) {
+        return (key instanceof PublicKey) ? "-----END PUBLIC KEY-----" : "-----END PRIVATE KEY-----";
     }
 
     /**
@@ -153,10 +149,9 @@ public class Helper {
      * to isolate the raw Base64 payload.
      */
     private static String extractBase64Content(String pemContent) {
-        // Remove headers and footers
-        String base64Content = pemContent.replace(PRIVATE_HEADER, "").replace(PRIVATE_FOOTER, "")
-                .replace(PUBLIC_HEADER, "").replace(PUBLIC_FOOTER, "")
-                .replace(CERT_HEADER, "").replace(CERT_FOOTER, "");
+        // Remove headers and footers using regex
+        String base64Content = pemContent.replaceAll("-----BEGIN.*?-----", "")
+                                         .replaceAll("-----END.*?-----", "");
 
         // Normalize line endings and remove leading and trailing whitespace
         return base64Content.replace("\r\n", "").replace("\n", "").trim();

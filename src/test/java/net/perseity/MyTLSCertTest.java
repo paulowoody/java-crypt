@@ -53,7 +53,10 @@ class MyTLSCertTest {
             MyTLSCert loadedTLSCert = new MyTLSCert(loadedCert);
             assertTrue(loadedTLSCert.verifySignature(keyPair.getPublicKey()));
         } finally {
-            new File(certPath).delete();
+            File fileToDelete = new File(certPath);
+            if (fileToDelete.exists() && !fileToDelete.delete()) {
+                fileToDelete.deleteOnExit();
+            }
         }
     }
 }

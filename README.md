@@ -74,6 +74,43 @@ To run the demonstration and see the narrative flow, execute the built assembly 
 java -jar target/java-crypt-0.1.0-SNAPSHOT-assembly.jar
 ```
 
+## Future
+The project already covers several foundational and practical applications of cryptography. To
+expand it with more real-world examples, we could consider the following:
+
+
+1. Password Hashing & Key Derivation (KDF)
+   While SymmetricCipher likely uses keys, demonstrating how to securely derive those keys from user
+   passwords using industry standards like Argon2, bcrypt, or PBKDF2 is a critical real-world use
+   case.
+
+
+2. Time-based One-Time Passwords (TOTP)
+   Implementing the algorithm behind Google Authenticator (RFC 6238). This combines HMAC with a moving
+   factor (time) and is the standard for modern Multi-Factor Authentication (MFA).
+
+
+3. Key Exchange (Diffie-Hellman / ECDH)
+   The project has MyKeyPair, but showing how two parties can establish a shared secret over an
+   insecure channel using Elliptic Curve Diffie-Hellman (ECDH) is fundamental to how TLS works under
+   the hood.
+
+
+4. JSON Object Encryption (JWE)
+   You already have MyJwt (which is typically signed, i.e., a JWS). Adding JWE would demonstrate how
+   to encrypt the payload of a JWT so that sensitive identity information isn't visible to the client
+   or intermediaries.
+
+5. Secure File Storage (AES-GCM)
+   A utility for encrypting/decrypting local files. This would involve handling initialization vectors
+   (IVs), salt management, and authenticated encryption to ensure the file hasn't been tampered with
+   while stored.
+
+
+6. Digital Signatures (Detached & CMS)
+   Extending the asymmetric examples to show detached signatures for software updates or CMS
+   (Cryptographic Message Syntax) for formal document signing.
+
 ## Changes
 
 - 0.1.0-SNAPSHOT

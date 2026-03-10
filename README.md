@@ -4,7 +4,21 @@
 
 Demonstrates the use of standard Java cryptographic libraries to generate key pairs, securely exchange secrets, encrypt messages, generate/verify JSON Web Tokens (JWTs), and manage self-signed TLS (X.509) Certificates.
 
-### Demonstration Flow
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details. 
+
+## Copyright
+
+Copyright (C) 2026, Paul Wood.
+
+## Contact
+
+**Project Maintainer:** paulowoody  
+**Email:** paulowoody@users.noreply.github.com  
+**Issues:** Please use the GitHub [Issues](https://github.com/paulowoody/java-crypt/issues) page for bug reports or feature requests.
+
+## Demonstration Flow
 
 The main demonstration (`net.perseity.Demo`) performs the following steps to simulate a secure exchange between two parties ("Alice" and "Bob"), followed by real-world API and secure server scenarios:
 
@@ -43,7 +57,7 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 21. A Hacker (Eve) intercepts the encrypted email in transit and attempts to decrypt it, but fails because she does not possess Bob's private key.
 22. A Hacker (Eve) attempts to forge an email claiming to be from Alice by signing it with her own key and encrypting it for Bob. Bob decrypts it, but detects the forgery because the signature verification fails against Alice's known public key.
 
-### Core Cryptographic Classes
+## Core Cryptographic Classes
 
 - `AsymmetricCipher`: An interface defining the contract for public/private key systems (like RSA or ECC). Allows easily swapping algorithms.
 - `SymmetricCipher`: An interface defining the contract for shared secret systems (like AES). Allows swapping fast encryption algorithms.
@@ -55,7 +69,7 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 - `MySecureEmail`: Demonstrates secure email concepts (signing, encrypting, decrypting, verifying) using standard Java cryptography instead of heavy third-party S/MIME libraries.
 - `Helper`: Provides common Base64 (Standard and URL-Safe) encoding/decoding and PEM file operations for Keys and Certificates.
 
-### Building and Running
+## Building and Running
 
 Ensure you have Java 24 and Maven installed.
 

@@ -9,7 +9,7 @@ Demonstrates the use of standard Java cryptographic libraries to generate key pa
 The main demonstration (`net.perseity.Demo`) performs the following steps to simulate a secure exchange between two parties ("Alice" and "Bob"), followed by real-world API and secure server scenarios:
 
 **Part 1: Key Pair Generation (Asymmetric)**
-1. Alice and Bob both generate their own personal RSA key pairs (`myKey` and `yourKey`).
+1. Alice and Bob both generate their own personal RSA key pairs (`alice-key` and `bob-key`).
 
 **Part 2: Secure Key Exchange (Asymmetric + Symmetric)**
 2. Alice creates a random, highly secure AES shared secret.
@@ -62,4 +62,4 @@ java -jar target/java-crypt-0.1.0-SNAPSHOT-assembly.jar
     - 2026-03-09, Added TLS/X.509 self-signed certificate generation using native Java libraries (`sun.security.x509`).
     - 2026-03-09, Added JWT/HMAC support, real-world scenario narrative, extensive Javadocs, and URL-Safe Base64 helpers.
     - 2026-03-09, Update documentation with demonstration flow and build instructions.
-    - 2025-06-24, Paul Wood
+    - 2025-06-24, Added RSA/AES functionality.

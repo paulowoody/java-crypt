@@ -47,59 +47,59 @@ public class Demo {
             LOGGER.info("=== 1. RSA Key Pair Generation ===");
             LOGGER.info("[Alice] and [Bob] want to communicate securely over the internet.");
             LOGGER.info("[Alice] generates her personal RSA key pair (Public/Private keys)...");
-            MyKeyPair myKeyPair = new MyKeyPair();
-            Helper.saveKeyPair(myKeyPair, "myKey.pub", "myKey.key");
-            Helper.loadKeyPair(myKeyPair, "myKey.pub", "myKey.key");
-            LOGGER.info("(Alice) Private KeyID: {}", myKeyPair.getPrivateKeyId());
-            LOGGER.info("(Alice) Public KeyID: {}", myKeyPair.getPublicKeyId());
+            MyKeyPair aliceKeyPair = new MyKeyPair();
+            Helper.saveKeyPair(aliceKeyPair, "alice-key.pub", "alice-key.key");
+            Helper.loadKeyPair(aliceKeyPair, "alice-key.pub", "alice-key.key");
+            LOGGER.info("(Alice) Private KeyID: {}", aliceKeyPair.getPrivateKeyId());
+            LOGGER.info("(Alice) Public KeyID: {}", aliceKeyPair.getPublicKeyId());
 
             LOGGER.info("[Bob] generates his personal RSA key pair...");
-            MyKeyPair yourKeyPair = new MyKeyPair();
-            Helper.saveKeyPair(yourKeyPair, "yourKey.pub", "yourKey.key");
-            Helper.loadKeyPair(yourKeyPair, "yourKey.pub", "yourKey.key");
-            LOGGER.info("(Bob) Private KeyID: {}", yourKeyPair.getPrivateKeyId());
-            LOGGER.info("(Bob) Public KeyID: {}", yourKeyPair.getPublicKeyId());
+            MyKeyPair bobKeyPair = new MyKeyPair();
+            Helper.saveKeyPair(bobKeyPair, "bob-key.pub", "bob-key.key");
+            Helper.loadKeyPair(bobKeyPair, "bob-key.pub", "bob-key.key");
+            LOGGER.info("(Bob) Private KeyID: {}", bobKeyPair.getPrivateKeyId());
+            LOGGER.info("(Bob) Public KeyID: {}", bobKeyPair.getPublicKeyId());
 
             System.out.println();
             LOGGER.info("=== 2. Key Exchange (RSA + AES) ===");
             LOGGER.info("[Alice] wants to establish a fast, secure channel with [Bob].");
             LOGGER.info("[Alice] creates a random AES shared secret...");
-            MyCrypt myCrypt = new MyCrypt();
-            String sharedSecret = myCrypt.getSecretKey();
+            MyCrypt aliceCrypt = new MyCrypt();
+            String sharedSecret = aliceCrypt.getSecretKey();
             LOGGER.info("Shared Secret: {}", sharedSecret);
 
             LOGGER.info("[Alice] encrypts the shared secret using [Bob]'s public key. Only [Bob] can decrypt it!");
-            String encryptedSharedSecret = yourKeyPair.encrypt(sharedSecret);
+            String encryptedSharedSecret = bobKeyPair.encrypt(sharedSecret);
             LOGGER.info("Encrypted Secret: {}", encryptedSharedSecret);
             LOGGER.info("[Alice] sends the encrypted secret to [Bob] over the public internet...\n");
 
             LOGGER.info("[Bob] receives the package and decrypts it using his private key...");
-            String decryptedSharedSecret = yourKeyPair.decrypt(encryptedSharedSecret);
+            String decryptedSharedSecret = bobKeyPair.decrypt(encryptedSharedSecret);
             LOGGER.info("Decrypted Secret: {}", decryptedSharedSecret);
 
             System.out.println();
             LOGGER.info("=== 3. Secure Messaging & Digital Signatures ===");
             LOGGER.info("[Bob] wants to send a secret message back to [Alice] using their new shared secret.");
             LOGGER.info("[Bob] encrypts the message with AES...");
-            MyCrypt yourCrypt = new MyCrypt(decryptedSharedSecret);
+            MyCrypt bobCrypt = new MyCrypt(decryptedSharedSecret);
             String message = "This is a secret message";
-            String encrypted = yourCrypt.encrypt(message);
+            String encrypted = bobCrypt.encrypt(message);
             LOGGER.info("Encrypted Message: {}", encrypted);
 
             LOGGER.info("[Bob] signs the encrypted message with his private key so [Alice] knows it really came from him...");
-            String signature = yourKeyPair.sign(encrypted);
-            LOGGER.info("Signature: {}", signature);
+            String bobSignature = bobKeyPair.sign(encrypted);
+            LOGGER.info("Bob's Signature: {}", bobSignature);
             LOGGER.info("[Bob] sends the encrypted message and signature to [Alice]...\n");
 
             LOGGER.info("[Alice] receives the message. First, she verifies the signature using [Bob]'s public key...");
-            boolean isVerified = yourKeyPair.isSignatureValid(encrypted, signature);
+            boolean isVerified = bobKeyPair.isSignatureValid(encrypted, bobSignature);
             if (isVerified) {
                 LOGGER.info("[Alice] Signature is verified. The message is authentic.");
             } else {
                 LOGGER.warn("[Alice] Signature is not verified. The message may be tampered with!");
             }
             LOGGER.info("[Alice] Now she decrypts the message using their AES shared secret...");
-            String decrypted = myCrypt.decrypt(encrypted);
+            String decrypted = aliceCrypt.decrypt(encrypted);
             LOGGER.info("Decrypted Message: {}", decrypted);
             assert message.equals(decrypted);
 
@@ -150,7 +150,7 @@ public class Demo {
             LOGGER.info("[Server/Alice] Generates a self-signed TLS Certificate using her RSA Key Pair...");
             
             String domain = "CN=alice.perseity.net";
-            MyTLSCert tlsCert = new MyTLSCert(myKeyPair, domain, 365);
+            MyTLSCert tlsCert = new MyTLSCert(aliceKeyPair, domain, 365);
             Helper.saveCert(tlsCert.getCertificate(), "alice-cert.pem");
             LOGGER.info("[Server/Alice] Certificate generated for {} and saved to alice-cert.pem", domain);
             
@@ -160,7 +160,7 @@ public class Demo {
             
             LOGGER.info("[Client/Bob] Verifies the certificate's signature...");
             // In a real scenario with a self-signed cert, Bob must already trust Alice's public key or the cert itself.
-            boolean isCertValid = bobViewOfCert.verifySignature(myKeyPair.getPublicKey());
+            boolean isCertValid = bobViewOfCert.verifySignature(aliceKeyPair.getPublicKey());
             if (isCertValid) {
                 LOGGER.info("[Client/Bob] Certificate is VALID and trusted. Proceeding with secure connection.");
             } else {

@@ -71,7 +71,7 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 
 ## Building and Running
 
-Ensure you have Java 24 and Maven installed.
+Ensure you have Java 21 and Maven 3 installed.
 
 To compile, run the unit tests, and package the application, run:
 ```bash
@@ -128,6 +128,7 @@ expand it with more real-world examples, we could consider the following:
 ## Changes
 
 - 0.1.0-SNAPSHOT
+    - 2026-03-10, Refactored to use ephemeral cryptographic keys in tests and support for Java 21+
     - 2026-03-10, Added Secure Email functions with pure standard library `MySecureEmail` implementation.
     - 2026-03-10, Added Hacker/Eve interception and forgery scenarios to both the TLS and Secure Email examples.
     - 2026-03-10, Updated `Demo.java` to output secure email payloads as `.eml` files to disk for inspection.

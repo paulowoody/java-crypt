@@ -1,12 +1,17 @@
 package net.perseity;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
+import java.nio.file.Path;
 import java.security.cert.X509Certificate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class MyTLSCertTest {
+
+    @TempDir
+    Path tempDir;
 
     @Test
     void testCreateAndVerifyTLSCert() throws Exception {
@@ -39,24 +44,18 @@ class MyTLSCertTest {
         MyKeyPair keyPair = new MyKeyPair();
         MyTLSCert tlsCert = new MyTLSCert(keyPair, "CN=localhost", 30);
         
-        String certPath = "test-cert.pem";
+        Path certPath = tempDir.resolve("test-cert.pem");
+        String certFileString = certPath.toString();
         
-        try {
-            Helper.saveCert(tlsCert.getCertificate(), certPath);
-            File certFile = new File(certPath);
-            assertTrue(certFile.exists());
-            
-            X509Certificate loadedCert = Helper.readCert(certPath);
-            assertNotNull(loadedCert);
-            assertEquals(tlsCert.getCertificate(), loadedCert);
-            
-            MyTLSCert loadedTLSCert = new MyTLSCert(loadedCert);
-            assertTrue(loadedTLSCert.verifySignature(keyPair.getPublicKey()));
-        } finally {
-            File fileToDelete = new File(certPath);
-            if (fileToDelete.exists() && !fileToDelete.delete()) {
-                fileToDelete.deleteOnExit();
-            }
-        }
+        Helper.saveCert(tlsCert.getCertificate(), certFileString);
+        File certFile = certPath.toFile();
+        assertTrue(certFile.exists());
+        
+        X509Certificate loadedCert = Helper.readCert(certFileString);
+        assertNotNull(loadedCert);
+        assertEquals(tlsCert.getCertificate(), loadedCert);
+        
+        MyTLSCert loadedTLSCert = new MyTLSCert(loadedCert);
+        assertTrue(loadedTLSCert.verifySignature(keyPair.getPublicKey()));
     }
 }

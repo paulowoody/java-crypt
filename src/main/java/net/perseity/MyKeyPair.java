@@ -58,6 +58,13 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Manually sets the internal KeyPair instance.
      */
+    public MyKeyPair(KeyPair keyPair) {
+        this.keyPair = keyPair;
+    }
+
+    /**
+     * Manually sets the internal KeyPair instance.
+     */
     public void setKeyPair(KeyPair keyPair) {
         this.keyPair = keyPair;
     }

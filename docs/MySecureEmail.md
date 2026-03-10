@@ -11,8 +11,8 @@ It provides end-to-end email security mimicking the core concepts of S/MIME:
 
 ## How it works
 1.  **Signing:** The plaintext message is signed using the Sender's RSA `PrivateKey`.
-2.  **Payload Encryption:** A fast, temporary AES Session Key is generated. The signed message is encrypted using this AES key via `MyCrypt`.
-3.  **Key Transport:** The AES Session Key is encrypted using the Recipient's RSA `PublicKey` via `MyKeyPair`.
+2.  **Payload Encryption:** A fast, temporary AES Session Key is generated. The signed message is encrypted using this AES key via a `SymmetricCipher` (like `MyCrypt`).
+3.  **Key Transport:** The AES Session Key is encrypted using the Recipient's RSA `PublicKey` via an `AsymmetricCipher` (like `MyKeyPair`).
 4.  **Packaging:** Both the encrypted AES key and the encrypted payload are packaged into a standard `javax.mail.internet.MimeMultipart`.
 5.  **Decryption:** The recipient uses their RSA `PrivateKey` to decrypt the AES key, uses the AES key to decrypt the payload, and uses the sender's RSA `PublicKey` to verify the signature.
 
@@ -23,6 +23,7 @@ It provides end-to-end email security mimicking the core concepts of S/MIME:
 String secretMessage = "Classified Project Data";
 
 // Sender signs with their key, encrypts for the recipient
+// senderKeyPair and recipientKeyPair should implement AsymmetricCipher
 MimeMultipart secureEmail = MySecureEmail.signAndEncrypt(
     secretMessage, 
     senderKeyPair,    // To sign

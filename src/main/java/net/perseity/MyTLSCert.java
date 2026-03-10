@@ -23,12 +23,12 @@ public class MyTLSCert {
     /**
      * Creates a new self-signed TLS certificate for the given KeyPair and domain name.
      *
-     * @param myKeyPair  The MyKeyPair containing the public and private keys.
+     * @param cipher     The AsymmetricCipher containing the public and private keys.
      * @param domainName The subject name for the certificate (e.g., "CN=localhost").
      * @param daysValid  The number of days the certificate should be valid.
      */
-    public MyTLSCert(MyKeyPair myKeyPair, String domainName, int daysValid) throws Exception {
-        this.certificate = generateSelfSignedCert(myKeyPair.getPrivateKey(), myKeyPair.getPublicKey(), domainName, daysValid);
+    public MyTLSCert(AsymmetricCipher cipher, String domainName, int daysValid) throws Exception {
+        this.certificate = generateSelfSignedCert(cipher.getPrivateKey(), cipher.getPublicKey(), domainName, daysValid, cipher.getAlgorithm());
     }
 
     /**
@@ -48,7 +48,7 @@ public class MyTLSCert {
     /**
      * Helper method to generate a self-signed X.509 Certificate.
      */
-    private X509Certificate generateSelfSignedCert(PrivateKey privateKey, PublicKey publicKey, String domainName, int daysValid)
+    private X509Certificate generateSelfSignedCert(PrivateKey privateKey, PublicKey publicKey, String domainName, int daysValid, String keyAlgorithm)
             throws CertificateException, IOException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
 
         X509CertInfo info = new X509CertInfo();
@@ -64,11 +64,21 @@ public class MyTLSCert {
         info.setIssuer(owner);
         info.setKey(new CertificateX509Key(publicKey));
         info.setVersion(new CertificateVersion(CertificateVersion.V3));
-        AlgorithmId algo = AlgorithmId.get("SHA256withRSA");
+        
+        // Choose signing algorithm based on the key algorithm
+        String sigAlgo = keyAlgorithm.equals("EC") ? "SHA256withECDSA" : "SHA256withRSA";
+        if (keyAlgorithm.equals(MyKeyPair.ALGORITHM)) {
+            sigAlgo = "SHA256withRSAandMGF1"; // Attempt to use PSS if RSASSA-PSS, or fallback
+            // Actually, standard Java X509CertImpl signing might require explicit PSS parameters.
+            // For simplicity, we can default to SHA256withRSA since it's just the signing algo of the cert.
+            sigAlgo = "SHA256withRSA"; 
+        }
+        
+        AlgorithmId algo = AlgorithmId.get(sigAlgo);
         info.setAlgorithmId(new CertificateAlgorithmId(algo));
 
         // Sign the cert
-        return X509CertImpl.newSigned(info, privateKey, "SHA256withRSA");
+        return X509CertImpl.newSigned(info, privateKey, sigAlgo);
     }
 
     /**

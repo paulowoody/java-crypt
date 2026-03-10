@@ -45,8 +45,10 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 
 ### Core Cryptographic Classes
 
-- `MyKeyPair`: Handles asymmetric cryptography (Public/Private Key Pairs) using RSA. Used for key exchange and digital signatures.
-- `MyCrypt`: Handles symmetric encryption/decryption using AES-GCM. Used for encrypting actual message data securely and fast.
+- `AsymmetricCipher`: An interface defining the contract for public/private key systems (like RSA or ECC). Allows easily swapping algorithms.
+- `SymmetricCipher`: An interface defining the contract for shared secret systems (like AES). Allows swapping fast encryption algorithms.
+- `MyKeyPair`: Implements `AsymmetricCipher` to handle asymmetric cryptography using RSA. Used for key exchange and digital signatures.
+- `MyCrypt`: Implements `SymmetricCipher` to handle symmetric encryption/decryption using AES-GCM. Used for encrypting actual message data securely and fast.
 - `MyJwt`: Handles the creation and verification of JSON Web Tokens using HMAC SHA-256 signatures.
 - `MyTLSCert`: Handles the creation, signing, and verification of TLS (X.509) Certificates using internal `sun.security.x509` APIs.
   - *Note: Because standard Java lacks a public API for certificate generation, this project intentionally uses internal JVM classes to avoid external dependencies. The `pom.xml` configures compiler arguments and jar manifest entries (`Add-Exports: java.base/sun.security.x509`) to bypass the Java Module System restrictions.*

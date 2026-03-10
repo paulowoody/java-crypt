@@ -1,6 +1,6 @@
 # MyKeyPair
 
-`MyKeyPair` handles asymmetric cryptography using RSA (Rivest–Shamir–Adleman). It acts as a wrapper around the standard `java.security.KeyPair`, `Cipher`, and `Signature` classes.
+`MyKeyPair` handles asymmetric cryptography using RSA (Rivest–Shamir–Adleman). It implements the `AsymmetricCipher` interface and acts as a wrapper around the standard `java.security.KeyPair`, `Cipher`, and `Signature` classes.
 
 ## What is it for?
 Asymmetric cryptography utilizes a mathematical pair of keys:

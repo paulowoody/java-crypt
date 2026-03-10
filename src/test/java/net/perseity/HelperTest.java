@@ -28,10 +28,15 @@ class HelperTest {
 
     @AfterEach
     void tearDown() throws IOException {
-        Files.walk(tempDir)
-             .sorted(java.util.Comparator.reverseOrder())
-             .map(Path::toFile)
-             .forEach(java.io.File::delete);
+        try (java.util.stream.Stream<Path> pathStream = Files.walk(tempDir)) {
+            pathStream.sorted(java.util.Comparator.reverseOrder())
+                      .map(Path::toFile)
+                      .forEach(file -> {
+                          if (!file.delete()) {
+                              file.deleteOnExit();
+                          }
+                      });
+        }
     }
 
     @Test
@@ -82,7 +87,7 @@ class HelperTest {
 
         // Load back from temporary files
         X509Certificate loadedCert = Helper.readCert(certFile.toString());
-        KeyPair loadedKeyPair = Helper.readKeyPair(pubKeyFile.toString(), privKeyFile.toString());
+        KeyPair loadedKeyPair = Helper.readKeyPair(pubKeyFile.toString(), privKeyFile.toString(), MyKeyPair.ALGORITHM);
 
         assertEquals(originalCert.getCertificate(), loadedCert);
         assertArrayEquals(originalKeyPair.getPublicKey().getEncoded(), loadedKeyPair.getPublic().getEncoded());
@@ -121,7 +126,7 @@ class HelperTest {
     void testSetupMailcap() {
         Helper.setupMailcap();
         CommandMap defaultMap = CommandMap.getDefaultCommandMap();
-        assertTrue(defaultMap instanceof MailcapCommandMap);
+        assertInstanceOf(MailcapCommandMap.class, defaultMap);
         
         MailcapCommandMap mailcapMap = (MailcapCommandMap) defaultMap;
         String[] mimetypes = mailcapMap.getMimeTypes();

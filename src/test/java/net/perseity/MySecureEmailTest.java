@@ -3,8 +3,6 @@ package net.perseity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.mail.internet.MimeBodyPart;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class MySecureEmailTest {

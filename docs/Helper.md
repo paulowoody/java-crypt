@@ -23,11 +23,11 @@ String urlSafe = Helper.b64UrlEncode(rawBytes);
 
 ### PEM Files (Keys and Certificates)
 ```java
-// Save an RSA KeyPair to disk
+// Save an AsymmetricCipher (e.g. RSA KeyPair) to disk
 Helper.saveKeyPair(myKeyPair, "public.pem", "private.pem");
 
-// Load an existing KeyPair from disk
-MyKeyPair loadedKeys = new MyKeyPair();
+// Load an existing KeyPair from disk into an AsymmetricCipher implementation
+AsymmetricCipher loadedKeys = new MyKeyPair();
 Helper.loadKeyPair(loadedKeys, "public.pem", "private.pem");
 
 // Read a Certificate

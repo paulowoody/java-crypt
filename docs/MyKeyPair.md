@@ -4,6 +4,7 @@
 
 ## What is it for?
 Asymmetric cryptography utilizes a mathematical pair of keys:
+
 1.  **Public Key:** Safe to share openly. Used by others to **encrypt** data sent to you, or to **verify** digital signatures you've created.
 2.  **Private Key:** Must be kept strictly secret. Used by you to **decrypt** data sent to you, or to **create** digital signatures proving your identity.
 

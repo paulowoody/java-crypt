@@ -23,26 +23,31 @@ Copyright (C) 2026, Paul Wood.
 The main demonstration (`net.perseity.Demo`) performs the following steps to simulate a secure exchange between two parties ("Alice" and "Bob"), followed by real-world API and secure server scenarios:
 
 **Part 1: Key Pair Generation (Asymmetric)**
+
 1. Alice and Bob both generate their own personal RSA key pairs (`alice-key` and `bob-key`).
 
 **Part 2: Secure Key Exchange (Asymmetric + Symmetric)**
+
 2. Alice creates a random, highly secure AES shared secret.
 3. Alice encrypts the AES shared secret using Bob's public RSA key (meaning only Bob can decrypt it).
 4. Bob receives the package and decrypts it using his private RSA key. Both parties now share the same AES secret.
 
 **Part 3: Secure Messaging & Digital Signatures (Symmetric + Asymmetric)**
+
 5. Bob encrypts a secret message using the new AES shared secret (much faster for data than RSA).
 6. Bob signs the encrypted message using his private RSA key to prove it came from him.
 7. Alice verifies the signature is valid using Bob's public key.
 8. Alice decrypts the encrypted secret message using their shared AES secret.
 
 **Part 4: Real-World JWT Scenario (HMAC)**
+
 9. A Server uses the shared secret as an HMAC key to generate a short-lived JSON Web Token (JWT) for a Client.
 10. The Client attaches the JWT to an API request.
 11. The Server verifies the token's cryptographic signature and expiration timestamp to grant access.
 12. A Hacker attempts to tamper with the token's payload, but the Server detects the invalid signature and rejects it.
 
 **Part 5: Real-World TLS Certificate Scenario (X.509)**
+
 13. A Server (Alice) uses her RSA key pair to generate a self-signed TLS Certificate to secure an HTTPS website.
 14. A Client (Bob) connects and downloads the certificate.
 15. Bob verifies the digital signature of the certificate using Alice's trusted public key to ensure a secure, un-tampered connection.
@@ -50,6 +55,7 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 
 **Part 6: Secure Email Scenario (Custom Implementation without Third-Party CMS)**
 *Note: True S/MIME compliance requires formatting the cryptographic payloads using a complex standard called CMS (Cryptographic Message Syntax, or PKCS#7). The Java Standard Library does not have internal support for generating CMS `EnvelopedData` (Encryption). Therefore, to create a fully S/MIME compliant application that standard email clients can natively read, a third-party library like BouncyCastle is required. This project demonstrates the exact same cryptographic concepts (Authenticity, Integrity, and Confidentiality) using only standard Java RSA/AES.*
+
 17. Alice creates a standard MimeMessage and encrypts/signs it using standard AES and RSA.
 18. She encrypts the message payload using AES, and encrypts the AES session key using Bob's public RSA key.
 19. Bob receives the encrypted message and decrypts the session key using his Private Key, and uses it to decrypt the body.

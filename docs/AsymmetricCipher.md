@@ -6,6 +6,7 @@
 By defining a generic interface, the application logic (such as secure email and TLS certificates) can be completely decoupled from any specific algorithmic implementation (like RSA). This enables developers to easily substitute newer, faster algorithms (like Elliptic Curve Cryptography / ECC) in the future without breaking existing application code.
 
 Asymmetric cryptography algorithms always require two paired keys:
+
 1. **Public Key:** Shared openly to allow others to encrypt messages for you and verify your digital signatures.
 2. **Private Key:** Kept secret to allow you to decrypt messages sent to you and create your digital signatures.
 

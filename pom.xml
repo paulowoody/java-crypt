@@ -24,6 +24,7 @@
                     <compilerArgs>
                         <arg>-proc:none</arg>
                         <arg>-Xlint:all</arg>
+                        <arg>-Xlint:-options</arg>
                         <arg>--add-exports=java.base/sun.security.x509=ALL-UNNAMED</arg>
                     </compilerArgs>
                 </configuration>

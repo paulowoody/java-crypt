@@ -73,6 +73,12 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 
 Ensure you have Java 21 and Maven 3 installed.
 
+### Compiler Configuration
+This project uses internal JVM APIs (`sun.security.x509`) for certificate generation to avoid external dependencies. As a result, the `pom.xml` is configured with:
+- `-source 21` and `-target 21` instead of `--release 21`, as the latter strictly enforces public API boundaries and would block access to internal classes.
+- `-Xlint:-options` to suppress the compiler warning about not setting the system module location when using `-source`.
+- `--add-exports` to allow the compiler and runtime to access the necessary internal packages.
+
 To compile, run the unit tests, and package the application, run:
 ```bash
 mvn clean package

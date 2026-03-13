@@ -7,6 +7,25 @@
     <groupId>net.perseity</groupId>
     <artifactId>java-crypt</artifactId>
     <version>0.1.0-SNAPSHOT</version>
+
+    <name>java-crypt</name>
+    <description>A Java library for cryptographic operations.</description>
+    <url>https://github.com/paulowoody/java-crypt</url>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License v3.0</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/paulowoody/java-crypt</url>
+        <connection>scm:git:git://github.com/paulowoody/java-crypt.git</connection>
+        <developerConnection>scm:git:ssh://github.com:paulowoody/java-crypt.git</developerConnection>
+    </scm>
+
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
@@ -78,13 +97,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.4.2</version>
-                <executions>
-                    <execution>
-                        <id>default-jar</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -224,4 +238,30 @@
             <version>1.6.2</version>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>cloudsmith</id>
+            <url>https://maven.cloudsmith.io/paulowoody/java-crypt/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>cloudsmith</id>
+            <url>https://maven.cloudsmith.io/paulowoody/java-crypt/</url>
+        </repository>
+
+        <snapshotRepository>
+            <id>cloudsmith</id>
+            <url>https://maven.cloudsmith.io/paulowoody/java-crypt/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 </project>

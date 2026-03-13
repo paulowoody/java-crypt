@@ -90,6 +90,11 @@ To compile, run the unit tests, and package the application, run:
 mvn clean package
 ```
 
+To run the demonstration and see the narrative flow, execute the built assembly JAR (the `-assembly` suffix indicates it includes all necessary dependencies):
+```bash
+java -jar target/java-crypt-0.1.0-SNAPSHOT-assembly.jar
+```
+
 To run the unit tests and automatically generate a JaCoCo code coverage report (found in `target/site/jacoco/index.html`), run:
 ```bash
 mvn clean test
@@ -150,13 +155,6 @@ After installation, you can verify it is available by running:
 You can also run a manual scan of the generated SBOM:
 
 `grype sbom:target/bom.json`
-
-## Running the finished JAR
-
-To run the demonstration and see the narrative flow, execute the built assembly jar:
-```bash
-java -jar target/java-crypt-0.1.0-SNAPSHOT-assembly.jar
-```
 
 ## Future
 The project already covers several foundational and practical applications of cryptography. To

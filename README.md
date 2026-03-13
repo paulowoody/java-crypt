@@ -100,6 +100,24 @@ To run the unit tests and automatically generate a JaCoCo code coverage report (
 mvn clean test
 ```
 
+## Samples
+
+In addition to the main library, this repository includes sample projects that demonstrate how to integrate `java-crypt` into your own applications.
+
+### Repro Demo
+Located in `samples/repro-demo`, this project shows how to:
+- Configure a Maven project to depend on the `java-crypt` library.
+- Access the Cloudsmith Maven repository.
+- Correctly set up the JVM export flags (`--add-exports`) required for certificate generation.
+- Implement a full cryptographic flow using the library.
+
+To build and run the sample:
+```bash
+cd samples/repro-demo
+mvn clean package
+mvn exec:exec
+```
+
 ## Optional: SBOM Generation (CycloneDX)
 
 This project automatically generates a CycloneDX Software Bill of Materials (SBOM) during the Maven build.
@@ -196,6 +214,7 @@ expand it with more real-world examples, we could consider the following:
 ## Changes
 
 - 0.1.0-SNAPSHOT
+    - 2026-03-13, Reorganized sample code into `samples/repro-demo` and aligned project structure.
     - 2026-03-10, Refactored to use ephemeral cryptographic keys in tests and support for Java 21+
     - 2026-03-10, Added Secure Email functions with pure standard library `MySecureEmail` implementation.
     - 2026-03-10, Added Hacker/Eve interception and forgery scenarios to both the TLS and Secure Email examples.

@@ -62,20 +62,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.7.1</version>
-                <configuration>
-                    <appendAssemblyId>true</appendAssemblyId>
-                    <archive>
-                        <manifest>
-                            <mainClass>net.perseity.Demo</mainClass>
-                        </manifest>
-                        <manifestEntries>
-                            <Add-Exports>java.base/sun.security.x509</Add-Exports>
-                        </manifestEntries>
-                    </archive>
-                    <descriptors>
-                        <descriptor>src/main/assembly/assembly.xml</descriptor>
-                    </descriptors>
-                </configuration>
                 <executions>
                     <execution>
                         <id>make-assembly</id>
@@ -83,6 +69,22 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
+                        <configuration>
+                            <attach>false</attach>
+                            <appendAssemblyId>true</appendAssemblyId>
+                            <archive>
+                                <manifest>
+                                    <mainClass>net.perseity.Demo</mainClass>
+                                </manifest>
+                                <manifestEntries>
+                                    <Add-Exports>java.base/sun.security.x509</Add-Exports>
+                                    <Multi-Release>true</Multi-Release>
+                                </manifestEntries>
+                            </archive>
+                            <descriptors>
+                                <descriptor>src/main/assembly/assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

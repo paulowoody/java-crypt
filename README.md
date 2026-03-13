@@ -95,6 +95,64 @@ To run the unit tests and automatically generate a JaCoCo code coverage report (
 mvn clean test
 ```
 
+## Optional: SBOM Generation (CycloneDX)
+
+This project automatically generates a CycloneDX Software Bill of Materials (SBOM) during the Maven build.
+The SBOM provides a complete, machine‑readable list of the libraries used by the application, which is useful for supply‑chain security, auditing, and vulnerability scanning.
+
+The SBOM is produced during the package phase and written to:
+
+- `target/bom.json` (JSON format)
+
+- `target/bom.xml` (XML format)
+
+To generate the SBOM manually, run:
+
+`mvn clean package`
+
+After the build completes, you can inspect the SBOM files directly or feed them into external tools such as Grype, Dependency-Track, or other SBOM consumers.
+
+CycloneDX specification and tooling details are available at:
+
+https://cyclonedx.org/
+
+## Optional: Vulnerability Scanning with Grype
+
+This project can optionally scan its generated SBOM (Software Bill of Materials) for known vulnerabilities using Grype, an open‑source scanner from Anchore.
+
+If Grype is installed on your system, running:
+
+`mvn verify`
+
+will automatically:
+
+- generate a CycloneDX SBOM (`target/bom.json`)
+
+- scan it with Grype
+
+- fail the build if vulnerabilities at or above the configured severity threshold are found
+
+This provides a lightweight alternative to commercial tools such as Black Duck.
+
+### Installing Grype
+
+Grype is distributed as a standalone binary for macOS, Linux, and Windows.
+Installation instructions are available in the official documentation:
+
+https://github.com/anchore/grype
+
+After installation, you can verify it is available by running:
+
+`grype --version`
+
+### Manual scanning
+
+You can also run a manual scan of the generated SBOM:
+
+`grype sbom:target/bom.json`
+
+## Running the finished JAR
+
 To run the demonstration and see the narrative flow, execute the built assembly jar:
 ```bash
 java -jar target/java-crypt-0.1.0-SNAPSHOT-assembly.jar

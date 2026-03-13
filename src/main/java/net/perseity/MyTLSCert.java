@@ -14,10 +14,13 @@ import java.util.Date;
  * A TLS Certificate securely binds a public key to an identity (like a domain name),
  * which is then digitally signed by a Certificate Authority (or self-signed).
  * This implementation uses the internal sun.security.x509 package to generate
- * self-signed certificates for demonstration purposes using standard Java 24 compatible methods.
+ * self-signed certificates for demonstration purposes using standard Java compatible methods.
  */
 public class MyTLSCert {
 
+    /**
+     * The underlying X.509 certificate.
+     */
     private final X509Certificate certificate;
 
     /**
@@ -26,13 +29,16 @@ public class MyTLSCert {
      * @param cipher     The AsymmetricCipher containing the public and private keys.
      * @param domainName The subject name for the certificate (e.g., "CN=localhost").
      * @param daysValid  The number of days the certificate should be valid.
+     * @throws Exception If certificate generation or signing fails.
      */
     public MyTLSCert(AsymmetricCipher cipher, String domainName, int daysValid) throws Exception {
         this.certificate = generateSelfSignedCert(cipher.getPrivateKey(), cipher.getPublicKey(), domainName, daysValid, cipher.getAlgorithm());
     }
 
     /**
-     * Initialises the MyTLSCert wrapper with an existing certificate.
+     * Initializes the MyTLSCert wrapper with an existing certificate.
+     * 
+     * @param certificate The X509Certificate to wrap.
      */
     public MyTLSCert(X509Certificate certificate) {
         this.certificate = certificate;
@@ -40,6 +46,8 @@ public class MyTLSCert {
 
     /**
      * Gets the underlying X509Certificate object.
+     * 
+     * @return The X509Certificate instance.
      */
     public X509Certificate getCertificate() {
         return certificate;
@@ -47,6 +55,19 @@ public class MyTLSCert {
 
     /**
      * Helper method to generate a self-signed X.509 Certificate.
+     * 
+     * @param privateKey The private key to sign the certificate with.
+     * @param publicKey The public key to include in the certificate.
+     * @param domainName The subject/issuer name (e.g., "CN=localhost").
+     * @param daysValid Validity period in days.
+     * @param keyAlgorithm The algorithm of the keys (e.g., "RSA").
+     * @return A newly generated and signed X509Certificate.
+     * @throws CertificateException If certificate creation fails.
+     * @throws IOException If encoding fails.
+     * @throws NoSuchAlgorithmException If the signing algorithm is not available.
+     * @throws InvalidKeyException If the private key is invalid.
+     * @throws NoSuchProviderException If the security provider is not found.
+     * @throws SignatureException If signing fails.
      */
     private X509Certificate generateSelfSignedCert(PrivateKey privateKey, PublicKey publicKey, String domainName, int daysValid, String keyAlgorithm)
             throws CertificateException, IOException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
@@ -86,6 +107,7 @@ public class MyTLSCert {
      * of the provided public key.
      *
      * @param publicKey The public key of the authority that allegedly signed the certificate.
+     * @return true if the signature is valid; false otherwise.
      */
     public boolean verifySignature(PublicKey publicKey) {
         try {

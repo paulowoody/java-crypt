@@ -23,7 +23,17 @@ import java.util.UUID;
  * meaning both the creator and the verifier must share the same secret key.
  */
 public class MyJwt {
+    /**
+     * Jackson ObjectMapper for JSON serialization and deserialization.
+     */
     private static final ObjectMapper mapper = new ObjectMapper();
+
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
+    private MyJwt() {
+        // Utility class
+    }
 
     /**
      * Generates a new signed JWT for a given subject (e.g., a username).
@@ -37,6 +47,9 @@ public class MyJwt {
      * @param subject The identity being authenticated (e.g., user ID).
      * @param secret  The shared secret key used to sign the token via HMAC.
      * @return A Base64-URL encoded JWT string containing three parts: Header.Payload.Signature
+     * @throws NoSuchAlgorithmException If the HmacSHA256 algorithm is not available.
+     * @throws InvalidKeyException If the secret key is invalid.
+     * @throws JsonProcessingException If JSON serialization of the header or payload fails.
      */
     public static String createToken(String subject, String secret) throws NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
         Instant now = Instant.now();
@@ -109,6 +122,12 @@ public class MyJwt {
     /**
      * Core cryptographic function that generates an HMAC SHA-256 signature for the token data.
      * The signature ensures the Header and Payload cannot be tampered with by a third party.
+     * 
+     * @param message The message to sign (usually Header.Payload).
+     * @param secret The shared secret key to use for HMAC.
+     * @return The HMAC signature as a Base64-URL encoded String.
+     * @throws NoSuchAlgorithmException If the HmacSHA256 algorithm is not available.
+     * @throws InvalidKeyException If the secret key is invalid.
      */
     private static String sign(String message, String secret) throws NoSuchAlgorithmException, InvalidKeyException {
         byte[] hash = secret.getBytes(StandardCharsets.UTF_8);

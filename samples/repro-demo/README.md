@@ -19,7 +19,7 @@ The `pom.xml` is pre-configured to:
 From the `repro-demo` directory, run:
 
 ```bash
-mvn clean package
+mvn clean verify
 ```
 
 This will:
@@ -34,15 +34,15 @@ This will:
 To run the reproduction demo:
 
 ```bash
-mvn exec:exec
+mvn compile exec:exec
 ```
 
 ### Option 2: Using the Assembly Jar
 
-To run the standalone executable jar (requires mandatory export flag):
+To run the standalone executable jar:
 
 ```bash
-java --add-exports java.base/sun.security.x509=ALL-UNNAMED -jar target/repro-demo-1.0-SNAPSHOT-jar-with-dependencies.jar
+java -jar target/repro-demo-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
 ## Running Tests

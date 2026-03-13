@@ -87,12 +87,16 @@ This project uses internal JVM APIs (`sun.security.x509`) for certificate genera
 
 To compile, run the unit tests, and package the application, run:
 ```bash
-mvn clean package
+mvn clean install
 ```
 
-To run the demonstration and see the narrative flow, execute the built assembly JAR (the `-assembly` suffix indicates it includes all necessary dependencies):
+To run the demonstration and see the narrative flow, you can either execute the built assembly JAR:
 ```bash
 java -jar target/java-crypt-0.1.0-SNAPSHOT-assembly.jar
+```
+Or use the Maven exec plugin directly (this will compile the code first if needed):
+```bash
+mvn compile exec:exec
 ```
 
 To run the unit tests and automatically generate a JaCoCo code coverage report (found in `target/site/jacoco/index.html`), run:
@@ -114,8 +118,11 @@ Located in `samples/repro-demo`, this project shows how to:
 To build and run the sample:
 ```bash
 cd samples/repro-demo
-mvn clean package
-mvn exec:exec
+mvn clean verify
+# Option 1: Run via Maven
+mvn compile exec:exec
+# Option 2: Run via standalone JAR
+java -jar target/repro-demo-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
 ## Optional: SBOM Generation (CycloneDX)

@@ -21,15 +21,39 @@ import java.util.HexFormat;
  * RSA is mathematically slow, so it's typically used to encrypt small secrets (like AES keys) rather than large messages.
  */
 public class MyKeyPair implements AsymmetricCipher {
+    /**
+     * The standard RSA signature algorithm (RSASSA-PSS).
+     */
     public static final String ALGORITHM = "RSASSA-PSS";
-    private static final int SIZE = 1024; // Key size in bits. Note: 1024 is considered weak today; 2048 or 4096 is recommended for production.
+
+    /**
+     * Key size in bits (1024). Note: 1024 is considered weak today; 2048 or 4096 is recommended for production.
+     */
+    private static final int SIZE = 1024;
+
+    /**
+     * Hash algorithm used for PSS signatures and OAEP padding (SHA-256).
+     */
     private static final String HASH = "SHA-256";
+
+    /**
+     * Mask generation function for RSA (MGF1).
+     */
     private static final String MASK_GEN_FN = "MGF1";
+
+    /**
+     * The RSA cipher transformation string with OAEP padding (RSA/ECB/OAEPWithSHA-256AndMGF1Padding).
+     */
     private static final String CYPHER = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
 
+    /**
+     * The underlying Java KeyPair instance containing the public and private keys.
+     */
     private java.security.KeyPair keyPair;
 
     /**
+     * Gets the standard algorithm name used by this key pair.
+     * 
      * @return The standard algorithm name.
      */
     @Override
@@ -39,6 +63,8 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Generates a brand new, random RSA Public/Private Key Pair.
+     * 
+     * @throws NoSuchAlgorithmException If the RSA algorithm is not available.
      */
     public MyKeyPair() throws NoSuchAlgorithmException {
         Security.setProperty("crypto.policy", "unlimited");
@@ -50,6 +76,12 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Loads an existing RSA Key Pair from stored Base64 string files.
+     * 
+     * @param publicKeyFile Path to the public key PEM file.
+     * @param privateKeyFile Path to the private key PEM file.
+     * @throws IOException If reading from the files fails.
+     * @throws NoSuchAlgorithmException If the RSA algorithm is not available.
+     * @throws InvalidKeySpecException If the key specifications are invalid.
      */
     public MyKeyPair(String publicKeyFile, String privateKeyFile) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         this.keyPair = Helper.readKeyPair(publicKeyFile, privateKeyFile, ALGORITHM);
@@ -57,6 +89,8 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Manually sets the internal KeyPair instance.
+     * 
+     * @param keyPair The KeyPair instance to use.
      */
     public MyKeyPair(KeyPair keyPair) {
         this.keyPair = keyPair;
@@ -64,7 +98,10 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Manually sets the internal KeyPair instance.
+     * 
+     * @param keyPair The KeyPair instance to set.
      */
+    @Override
     public void setKeyPair(KeyPair keyPair) {
         this.keyPair = keyPair;
     }
@@ -72,7 +109,16 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Decrypts a message using this instance's Private Key.
      * Only the owner of the Private Key can read data that was encrypted with their Public Key.
+     * 
+     * @param encrypted The base64 encoded ciphertext to decrypt.
+     * @return The decrypted plaintext message as a String.
+     * @throws NoSuchAlgorithmException If the RSA algorithm is not available.
+     * @throws NoSuchPaddingException If the requested padding is not available.
+     * @throws InvalidKeyException If the private key is invalid.
+     * @throws IllegalBlockSizeException If the block size is invalid.
+     * @throws BadPaddingException If the padding is incorrect.
      */
+    @Override
     public String decrypt(String encrypted) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         byte[] decodedBytes = Helper.b64Decode(encrypted);
         Cipher cipher = Cipher.getInstance(CYPHER);
@@ -84,7 +130,16 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Encrypts a message using this instance's Public Key.
      * Anyone can use the Public Key to encrypt a message, but only the Private Key owner can decrypt it.
+     * 
+     * @param message The plaintext message to encrypt.
+     * @return The encrypted ciphertext as a base64 encoded String.
+     * @throws NoSuchAlgorithmException If the RSA algorithm is not available.
+     * @throws NoSuchPaddingException If the requested padding is not available.
+     * @throws InvalidKeyException If the public key is invalid.
+     * @throws IllegalBlockSizeException If the block size is invalid.
+     * @throws BadPaddingException If padding fails.
      */
+    @Override
     public String encrypt(String message) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance(CYPHER);
         cipher.init(Cipher.ENCRYPT_MODE, getPublicKey());
@@ -96,7 +151,16 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Verifies a digital signature using this instance's Public Key.
      * This proves that the message was signed by the owner of the corresponding Private Key and hasn't been altered.
+     * 
+     * @param message The original message that was signed.
+     * @param signature The base64 encoded digital signature to verify.
+     * @return true if the signature is valid; false otherwise.
+     * @throws NoSuchAlgorithmException If the signature algorithm is not available.
+     * @throws InvalidKeyException If the public key is invalid.
+     * @throws SignatureException If signature verification fails.
+     * @throws InvalidAlgorithmParameterException If the PSS parameters are invalid.
      */
+    @Override
     public boolean isSignatureValid(String message, String signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, InvalidAlgorithmParameterException {
         byte[] signatureBytes = Helper.b64Decode(signature);
         byte[] messageBytes = message.getBytes();
@@ -113,7 +177,15 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Creates a digital signature for a message using this instance's Private Key.
      * A signature proves authenticity (who sent it) and integrity (it wasn't tampered with).
+     * 
+     * @param message The message to sign.
+     * @return The digital signature as a base64 encoded String.
+     * @throws NoSuchAlgorithmException If the signature algorithm is not available.
+     * @throws InvalidKeyException If the private key is invalid.
+     * @throws SignatureException If signing fails.
+     * @throws InvalidAlgorithmParameterException If the PSS parameters are invalid.
      */
+    @Override
     public String sign(String message) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, InvalidAlgorithmParameterException {
         Signature signature = Signature.getInstance(ALGORITHM);
         MGF1ParameterSpec mgf1Spec = MGF1ParameterSpec.SHA256;
@@ -128,14 +200,20 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Returns the underlying Java PrivateKey object.
+     * 
+     * @return The private key from the internal KeyPair.
      */
+    @Override
     public PrivateKey getPrivateKey() {
         return keyPair.getPrivate();
     }
 
     /**
      * Returns the underlying Java PublicKey object.
+     * 
+     * @return The public key from the internal KeyPair.
      */
+    @Override
     public PublicKey getPublicKey() {
         return keyPair.getPublic();
     }
@@ -144,7 +222,11 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Generates a short, unique identifier (fingerprint) for the Public Key.
      * Useful for comparing keys or displaying them in logs without printing the massive raw key string.
+     * 
+     * @return A hexadecimal string representing the Public Key's ID.
+     * @throws NoSuchAlgorithmException If the hash algorithm for calculation is not available.
      */
+    @Override
     public String getPublicKeyId() throws NoSuchAlgorithmException {
         KeySpec publicKeySpec = getKeySpec(keyPair.getPublic());
         return calculateKeyId(publicKeySpec);
@@ -152,7 +234,11 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Generates a short, unique identifier (fingerprint) for the Private Key.
+     * 
+     * @return A hexadecimal string representing the Private Key's ID.
+     * @throws NoSuchAlgorithmException If the hash algorithm for calculation is not available.
      */
+    @Override
     public String getPrivateKeyId() throws NoSuchAlgorithmException {
         KeySpec privateKeySpec = getKeySpec(keyPair.getPrivate());
         return calculateKeyId(privateKeySpec);
@@ -160,6 +246,10 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Extracts the mathematical properties (modulus and exponent) that make up an RSA key.
+     * 
+     * @param key The RSA key (Public or Private) to extract specs from.
+     * @return The KeySpec object for the given key.
+     * @throws IllegalArgumentException If the key type is not supported.
      */
     private KeySpec getKeySpec(Key key) {
         if (key instanceof RSAPublicKey publicKey) {
@@ -174,6 +264,10 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Calculates the Key ID by combining the mathematical properties of the key,
      * hashing them with SHA-256, and taking the first 8 bytes.
+     * 
+     * @param keySpec The specification of the RSA key.
+     * @return A hexadecimal fingerprint String.
+     * @throws NoSuchAlgorithmException If the hash algorithm is not available.
      */
     private String calculateKeyId(KeySpec keySpec) throws NoSuchAlgorithmException {
         BigInteger modulus;
@@ -197,6 +291,10 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Helper method to concatenate two byte arrays.
+     * 
+     * @param a The first byte array.
+     * @param b The second byte array.
+     * @return The combined byte array.
      */
     private byte[] appendByteArray(byte[] a, byte[] b) {
         byte[] result = new byte[a.length + b.length];
@@ -207,6 +305,9 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Converts a byte array into a colon-separated hexadecimal string format (e.g., "1A:2B:3C").
+     * 
+     * @param bytes The byte array to convert.
+     * @return The formatted hexadecimal String.
      */
     private String bytesToHexString(byte[] bytes) {
         HexFormat hexFormat = HexFormat.ofDelimiter(":");

@@ -15,6 +15,7 @@
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
+    <!-- This sample pulls the java-crypt library from a specific Cloudsmith repository -->
     <repositories>
         <repository>
             <id>cloudsmith</id>
@@ -29,11 +30,13 @@
     </repositories>
 
     <dependencies>
+        <!-- The library being demonstrated -->
         <dependency>
             <groupId>net.perseity</groupId>
             <artifactId>java-crypt</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
+        <!-- Logging and Mail dependencies required by the demo code -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
@@ -59,6 +62,30 @@
 
     <build>
         <plugins>
+            <!-- 1. Maven Clean Plugin: Cleans up demo-generated files from the project root. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.2</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>.</directory>
+                            <includes>
+                                <include>*.pem</include>
+                                <include>*.pub</include>
+                                <include>*.key</include>
+                                <include>*.eml</include>
+                                <include>*.log</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+
+            <!-- 2. Maven Compiler Plugin: Accesses internal sun.security APIs.
+                 Note the use of add-exports to bypass Java Module System restrictions. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -75,6 +102,7 @@
                 </configuration>
             </plugin>
 
+            <!-- 3. Maven Surefire Plugin: Runs tests with necessary JVM exports. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -84,6 +112,7 @@
                 </configuration>
             </plugin>
 
+            <!-- 4. Maven Assembly Plugin: Bundles the sample into a standalone JAR. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -115,17 +144,12 @@
                 </executions>
             </plugin>
 
+            <!-- 5. Exec Maven Plugin: Allows 'mvn compile exec:exec' to run the demo.
+                 Includes the mandatory JVM export for X.509 certificate generation. -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <configuration>
                     <executable>java</executable>
                     <arguments>
@@ -136,6 +160,13 @@
                         <argument>net.example.ReproDemo</argument>
                     </arguments>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

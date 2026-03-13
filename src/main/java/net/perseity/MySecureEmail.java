@@ -20,13 +20,21 @@ import javax.mail.internet.MimeMultipart;
 public class MySecureEmail {
 
     /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
+    private MySecureEmail() {
+        // Utility class
+    }
+
+    /**
      * Signs the email body with the sender's private key, and encrypts it with 
      * a temporary AES key which is then encrypted for the recipient.
      *
      * @param messageBody       The plaintext message.
      * @param senderKeyPair     The sender's RSA Key Pair (used to sign).
      * @param recipientKeyPair  The recipient's RSA Key Pair (used to encrypt the session key).
-     * @return A MimeBodyPart containing the encrypted key and payload.
+     * @return A MimeMultipart containing the encrypted session key and the encrypted payload.
+     * @throws Exception If signing, encryption, or MIME part creation fails.
      */
     public static MimeMultipart signAndEncrypt(String messageBody, AsymmetricCipher senderKeyPair, AsymmetricCipher recipientKeyPair) throws Exception {
         // 1. Sign the message
@@ -66,7 +74,8 @@ public class MySecureEmail {
      * @param encryptedEmail    The MimeMultipart containing the encrypted data.
      * @param recipientKeyPair  The recipient's RSA Key Pair (used to decrypt the session key).
      * @param senderKeyPair     The sender's RSA Key Pair (used to verify the signature).
-     * @return A DecryptedEmail object containing the message and signature status.
+     * @return A DecryptedEmail object containing the decrypted message and its signature verification status.
+     * @throws Exception If decryption, signature verification, or MIME parsing fails.
      */
     public static DecryptedEmail decryptAndVerify(MimeMultipart encryptedEmail, AsymmetricCipher recipientKeyPair, AsymmetricCipher senderKeyPair) throws Exception {
         MimeBodyPart keyPart = (MimeBodyPart) encryptedEmail.getBodyPart(0);
@@ -104,18 +113,42 @@ public class MySecureEmail {
     }
 
     /**
-     * Simple wrapper to hold the results of decryption.
+     * Simple wrapper to hold the results of decryption and signature verification.
      */
     public static class DecryptedEmail {
+        /**
+         * The decrypted plaintext message.
+         */
         private final String message;
+
+        /**
+         * Whether the signature was validly verified against the sender's public key.
+         */
         private final boolean validSignature;
 
+        /**
+         * Constructs a new DecryptedEmail object.
+         * 
+         * @param message The decrypted plaintext message.
+         * @param validSignature Whether the signature is valid.
+         */
         public DecryptedEmail(String message, boolean validSignature) {
             this.message = message;
             this.validSignature = validSignature;
         }
 
+        /**
+         * Gets the decrypted message.
+         * 
+         * @return The message String.
+         */
         public String getMessage() { return message; }
+
+        /**
+         * Checks if the digital signature was valid.
+         * 
+         * @return true if the signature is valid; false otherwise.
+         */
         public boolean isSignatureValid() { return validSignature; }
     }
 }

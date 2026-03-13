@@ -19,16 +19,40 @@ import java.util.Arrays;
  * It is much faster than asymmetric (RSA) encryption, making it ideal for encrypting large amounts of data (like messages).
  */
 public class MyCrypt implements SymmetricCipher {
+    /**
+     * AES key size in bits (256 bits).
+     */
     private static final int KEY_SIZE = 256;
-    private static final int IV_SIZE = 12; // GCM recommended IV size is 12 bytes
-    private static final int SALT_SIZE = 16;
-    private static final int PBE_ITERATIONS = 65535;
-    private static final String AES_GCM_NOPADDING = "AES/GCM/NoPadding"; // GCM mode provides both confidentiality and data authenticity
 
+    /**
+     * GCM recommended initialization vector (IV) size in bytes (12 bytes).
+     */
+    private static final int IV_SIZE = 12;
+
+    /**
+     * Salt size for password-based key derivation in bytes (16 bytes).
+     */
+    private static final int SALT_SIZE = 16;
+
+    /**
+     * Number of iterations for PBKDF2 password-based key derivation (65535).
+     */
+    private static final int PBE_ITERATIONS = 65535;
+
+    /**
+     * The AES-GCM transformation string (AES/GCM/NoPadding).
+     */
+    private static final String AES_GCM_NOPADDING = "AES/GCM/NoPadding";
+
+    /**
+     * The underlying SecretKey used for cryptographic operations.
+     */
     private SecretKey secretKey;
 
     /**
      * Generates a new random AES shared secret key.
+     * 
+     * @throws NoSuchAlgorithmException If the AES algorithm is not available.
      */
     public MyCrypt() throws NoSuchAlgorithmException {
         secretKey = generateSecretKey();
@@ -36,6 +60,9 @@ public class MyCrypt implements SymmetricCipher {
 
     /**
      * Reconstructs an existing AES shared secret key from its Base64 representation.
+     * 
+     * @param b64Key The Base64 encoded secret key.
+     * @throws NoSuchAlgorithmException If the AES algorithm is not available.
      */
     public MyCrypt(String b64Key) throws NoSuchAlgorithmException {
         this.secretKey = new SecretKeySpec(Helper.b64Decode(b64Key), "AES");
@@ -45,6 +72,9 @@ public class MyCrypt implements SymmetricCipher {
      * Generates a random Initialization Vector (IV).
      * An IV ensures that encrypting the same message multiple times produces different ciphertexts,
      * protecting against pattern analysis.
+     * 
+     * @return A random IV as a byte array.
+     * @throws NoSuchAlgorithmException If the SecureRandom algorithm is not available.
      */
     private byte[] generateIv() throws NoSuchAlgorithmException {
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
@@ -53,6 +83,12 @@ public class MyCrypt implements SymmetricCipher {
         return iv;
     }
 
+    /**
+     * Generates a new random AES SecretKey.
+     * 
+     * @return A randomly generated SecretKey.
+     * @throws NoSuchAlgorithmException If the AES algorithm is not available.
+     */
     private SecretKey generateSecretKey() throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(KEY_SIZE);
@@ -61,6 +97,9 @@ public class MyCrypt implements SymmetricCipher {
 
     /**
      * Helper to generate a random Salt for password-based key generation.
+     * 
+     * @return A random salt as a byte array.
+     * @throws NoSuchAlgorithmException If the SecureRandom algorithm is not available.
      */
     private byte[] generateSalt() throws NoSuchAlgorithmException {
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
@@ -72,6 +111,10 @@ public class MyCrypt implements SymmetricCipher {
     /**
      * Derives a cryptographic key from a human-readable password using PBKDF2.
      * This makes brute-force guessing much harder by iteratively hashing the password and salt.
+     * 
+     * @param password The user-provided password to derive the key from.
+     * @throws NoSuchAlgorithmException If the PBKDF2 algorithm is not available.
+     * @throws InvalidKeySpecException If the password or salt specifications are invalid.
      */
     public void generateKeyFromPassword(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] salt = generateSalt();
@@ -83,13 +126,18 @@ public class MyCrypt implements SymmetricCipher {
 
     /**
      * Returns the raw bytes of the secret key, encoded as a Base64 string for easy transmission.
+     * 
+     * @return The Base64 encoded secret key.
      */
+    @Override
     public String getSecretKey() {
         return Helper.b64Encode(secretKey.getEncoded());
     }
 
     /**
      * Replaces the current secret key with one provided as a Base64 string.
+     * 
+     * @param b64Key The Base64 encoded secret key to set.
      */
     public void setSecretKey(String b64Key) {
         secretKey = new SecretKeySpec(Helper.b64Decode(b64Key), "AES");
@@ -99,7 +147,17 @@ public class MyCrypt implements SymmetricCipher {
      * Encrypts plaintext using AES-GCM. 
      * GCM (Galois/Counter Mode) inherently includes an authentication tag, ensuring the data is not tampered with.
      * The randomly generated IV is prepended to the resulting ciphertext so the decrypter can use it.
+     * 
+     * @param plaintext The plaintext String to encrypt.
+     * @return The encrypted ciphertext, prepended with the IV, as a Base64 encoded String.
+     * @throws NoSuchPaddingException If the requested padding is not available.
+     * @throws NoSuchAlgorithmException If the AES algorithm is not available.
+     * @throws InvalidAlgorithmParameterException If the IV specification is invalid.
+     * @throws InvalidKeyException If the secret key is invalid.
+     * @throws IllegalBlockSizeException If the block size is invalid.
+     * @throws BadPaddingException If the padding is incorrect.
      */
+    @Override
     public String encrypt(String plaintext) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance(AES_GCM_NOPADDING);
         byte[] iv = generateIv();
@@ -119,7 +177,17 @@ public class MyCrypt implements SymmetricCipher {
      * Decrypts ciphertext using AES-GCM.
      * It extracts the IV prepended to the ciphertext, then uses the shared secret to decrypt.
      * Thanks to GCM, this step will fail (throwing AEADBadTagException) if the ciphertext was tampered with in transit.
+     * 
+     * @param ciphertext The Base64 encoded ciphertext (prepended with IV) to decrypt.
+     * @return The original decrypted plaintext String.
+     * @throws NoSuchPaddingException If the requested padding is not available.
+     * @throws NoSuchAlgorithmException If the AES algorithm is not available.
+     * @throws InvalidAlgorithmParameterException If the IV specification is invalid.
+     * @throws InvalidKeyException If the secret key is invalid.
+     * @throws IllegalBlockSizeException If the block size is invalid.
+     * @throws BadPaddingException If the decryption fails (e.g., due to tampering).
      */
+    @Override
     public String decrypt(String ciphertext) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         byte[] ciphertextBytes = Helper.b64Decode(ciphertext);
         Cipher cipher = Cipher.getInstance(AES_GCM_NOPADDING);

@@ -14,10 +14,28 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class Demo {
+/**
+ * A demonstration class that showcases various cryptographic operations using the java-crypt library.
+ * This class is package-private as it is intended for internal developer demonstrations and testing,
+ * not for public use as part of the library API.
+ */
+class Demo {
+    /**
+     * Logger for this class.
+     */
     private static final Logger LOGGER = LogManager.getLogger(Demo.class);
+
+    /**
+     * Set to true to enable debugging information, such as available cipher and signature algorithms.
+     */
     private static final boolean DEBUG = false;
 
+    /**
+     * The main entry point for the demo application.
+     * 
+     * @param args Command line arguments (not used).
+     * @throws RuntimeException If any unhandled cryptographic or IO exception occurs during the demo.
+     */
     public static void main(String[] args) throws RuntimeException {
         if (DEBUG) {
             try {

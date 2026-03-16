@@ -98,13 +98,14 @@ public class MySecureEmail {
         SymmetricCipher sessionCrypt = new MyCrypt(sessionSecret);
         String signedMessagePayload = sessionCrypt.decrypt(encryptedPayload);
 
-        // 3. Extract message and signature
-        String[] parts = signedMessagePayload.split("\n\n---SIGNATURE---\n");
-        if (parts.length != 2) {
+        // 3. Extract message and signature using the LAST occurrence of the delimiter
+        String delimiter = "\n\n---SIGNATURE---\n";
+        int lastIndex = signedMessagePayload.lastIndexOf(delimiter);
+        if (lastIndex == -1) {
             throw new SecurityException("Invalid secure email format.");
         }
-        String messageBody = parts[0];
-        String signature = parts[1];
+        String messageBody = signedMessagePayload.substring(0, lastIndex);
+        String signature = signedMessagePayload.substring(lastIndex + delimiter.length());
 
         // 4. Verify the signature using sender's Public Key
         boolean isSignatureValid = senderKeyPair.isSignatureValid(messageBody, signature);

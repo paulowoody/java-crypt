@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -230,12 +231,11 @@
             <!-- 11. Exec Maven Plugin: Allows running the Demo directly from Maven.
                   - default configuration: runs net.perseity.Demo with required JVM exports.
                   - coverage-summary: uses 'awk' to print a nice coverage percentage in the logs.
-                  - scan-with-grype: (Optional) runs a security scan on the SBOM if 'grype' is installed. 
                   
                   NOTE: We use combine.self="override" in the executions below to prevent them from 
                   incorrectly inheriting the Java-specific arguments (like add-exports) defined 
                   in the default configuration above. This ensures non-Java tools like 'awk' 
-                  and 'grype' receive only their intended parameters. -->
+                  receive only their intended parameters. -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -250,36 +250,30 @@
                         <argument>net.perseity.Demo</argument>
                     </arguments>
                 </configuration>
+            </plugin>
+
+            <!-- 12. OWASP Maven Plugin: Runs dependency security scan from Maven. 
+                 Bound to the 'verify' phase to ensure it blocks the build before 
+                 installation or deployment if high-severity vulnerabilities (CVSS >= 7.0) are found. -->
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>12.1.3</version>
+                <configuration>
+                    <nvdApiKey>${nvd.api.key}</nvdApiKey>
+                    <failBuildOnCVSS>7.0</failBuildOnCVSS>
+                    <formats>
+                        <format>HTML</format>
+                        <format>JSON</format>
+                    </formats>
+                    <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>coverage-summary</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>awk</executable>
-                            <arguments combine.self="override">
-                                <argument>-F,</argument>
-                                <argument>{ instructions += $4 + $5; covered += $5 } END { print "\n[INFO] ========================================================\n[INFO] JaCoCo Total Code Coverage: " int(100*covered/instructions) "% (" covered "/" instructions " instructions)\n[INFO] ========================================================\n" }</argument>
-                                <argument>target/site/jacoco/jacoco.csv</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>scan-with-grype</id>
                         <phase>verify</phase>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>check</goal>
                         </goals>
-                        <configuration>
-                            <executable>${env.HOME}/bin/grype</executable>
-                            <arguments combine.self="override">
-                                <argument>sbom:${project.build.directory}/bom.json</argument>
-                                <argument>--fail-on</argument>
-                                <argument>medium</argument>
-                            </arguments>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -288,6 +282,9 @@
     </build>
 
     <dependencyManagement>
+        <!-- Security Overrides: Explicitly manage dependency versions.
+             - Plexus versions to mitigate Path Traversal and Zip-Slip vulnerabilities (e.g.,
+               CVE-2023-37460) found in transitive dependencies from older Maven plugins -->
         <dependencies>
             <dependency>
                 <groupId>org.codehaus.plexus</groupId>
@@ -336,27 +333,14 @@
     </dependencies>
 
     <!-- Project-specific Cloudsmith Maven repository for library distribution -->
-    <repositories>
-        <repository>
-            <id>cloudsmith</id>
-            <url>https://maven.cloudsmith.io/paulowoody/java-crypt/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <distributionManagement>
         <repository>
-            <id>cloudsmith</id>
-            <url>https://maven.cloudsmith.io/paulowoody/java-crypt/</url>
+            <id>cloudsmith-deploy</id>
+            <url>https://maven.cloudsmith.io/paulowoody/java-crypt/maven/</url>
         </repository>
         <snapshotRepository>
-            <id>cloudsmith</id>
-            <url>https://maven.cloudsmith.io/paulowoody/java-crypt/</url>
+            <id>cloudsmith-deploy</id>
+            <url>https://maven.cloudsmith.io/paulowoody/java-crypt/maven/</url>
         </snapshotRepository>
     </distributionManagement>
 

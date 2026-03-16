@@ -10,7 +10,7 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ## Copyright
 
-Copyright (C) 2026, Paul Wood.
+Copyright © 2026, Paul Wood.
 
 ## Contact
 
@@ -90,6 +90,8 @@ To compile, run the unit tests, and package the application, run:
 mvn clean install
 ```
 
+*Note: The `clean` goal is configured to also remove temporary cryptographic keys, certificates, and email files (`.pem`, `.key`, `.eml`, etc.) generated in the project root during demonstration runs.*
+
 To run the demonstration and see the narrative flow, you can either execute the built assembly JAR:
 ```bash
 java -jar target/java-crypt-0.1.0-SNAPSHOT-assembly.jar
@@ -125,6 +127,12 @@ mvn compile exec:exec
 java -jar target/repro-demo-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
+## Security and Dependency Management
+
+This project uses `dependencyManagement` in the `pom.xml` to explicitly override versions of transitive dependencies that have known security vulnerabilities. 
+
+For example, we explicitly manage versions of `plexus-archiver` and `plexus-utils` to mitigate Path Traversal and Zip‑Slip vulnerabilities (e.g., [CVE‑2023‑37460](https://nvd.nist.gov/vuln/detail/CVE-2023-37460)) found in transitive dependencies from older Maven plugins.
+
 ## Optional: SBOM Generation (CycloneDX)
 
 This project automatically generates a CycloneDX Software Bill of Materials (SBOM) during the Maven build.
@@ -146,40 +154,53 @@ CycloneDX specification and tooling details are available at:
 
 https://cyclonedx.org/
 
-## Optional: Vulnerability Scanning with Grype
+## Optional: Vulnerability Scanning with OWASP Dependency-Check
 
-This project can optionally scan its generated SBOM (Software Bill of Materials) for known vulnerabilities using Grype, an open‑source scanner from Anchore.
+This project is configured with the [OWASP Dependency-Check Maven Plugin](https://jeremylong.github.io/DependencyCheck/) to identify project dependencies and check for known, publicly disclosed vulnerabilities.
 
-If Grype is installed on your system, running:
+### Running the Scan
 
-`mvn verify`
+The scan is bound to the `verify` phase. Because it requires an NVD API key, it is optional and must be invoked with the key:
 
-will automatically:
+```bash
+mvn verify -Dnvd.api.key=YOUR_NVD_API_KEY
+```
 
-- generate a CycloneDX SBOM (`target/bom.json`)
+**N.B.** A key may be obtained from: [Request an API Key](https://nvd.nist.gov/developers/request-an-api-key)
 
-- scan it with Grype
+The plugin is configured to:
+- **Fail the build** if any vulnerabilities with a CVSS score of **7.0 or higher** are found.
+- Generate reports in both **HTML** and **JSON** formats in the `target/` directory (e.g., `target/dependency-check-report.html`).
 
-- fail the build if vulnerabilities at or above the configured severity threshold are found
+### Storing the API Key in `settings.xml`
 
-This provides a lightweight alternative to commercial tools such as Black Duck.
+To avoid passing the API key on the command line every time, you can add it to your global Maven configuration in `~/.m2/settings.xml`.
 
-### Installing Grype
+e.g. Add the following inside the `<profiles>` section of your `settings.xml` file:
 
-Grype is distributed as a standalone binary for macOS, Linux, and Windows.
-Installation instructions are available in the official documentation:
+```xml
+<profiles>
+  <profile>
+    <id>owasp-scanning</id>
+    <activation>
+      <activeByDefault>true</activeByDefault>
+    </activation>
+    <properties>
+      <nvd.api.key>YOUR_NVD_API_KEY_HERE</nvd.api.key>
+    </properties>
+  </profile>
+</profiles>
 
-https://github.com/anchore/grype
+<activeProfiles>
+  <activeProfile>nvd-security</activeProfile>
+</activeProfiles>
+```
 
-After installation, you can verify it is available by running:
+With this configuration, you can run the scan simply by calling:
 
-`grype --version`
-
-### Manual scanning
-
-You can also run a manual scan of the generated SBOM:
-
-`grype sbom:target/bom.json`
+```bash
+mvn verify
+```
 
 ## Future
 The project already covers several foundational and practical applications of cryptography. To
@@ -221,6 +242,7 @@ expand it with more real-world examples, we could consider the following:
 ## Changes
 
 - 0.1.0-SNAPSHOT
+    - 2026-03-16, Added OWASP Dependency‑Check for vulnerability scanning, security overrides for transitive dependencies, and enhanced Maven build with Javadoc and Source plugins.
     - 2026-03-13, Reorganized sample code into `samples/repro-demo` and aligned project structure.
     - 2026-03-10, Refactored to use ephemeral cryptographic keys in tests and support for Java 21+
     - 2026-03-10, Added Secure Email functions with pure standard library `MySecureEmail` implementation.

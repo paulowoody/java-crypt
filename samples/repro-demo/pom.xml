@@ -15,16 +15,18 @@
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
-    <!-- This sample pulls the java-crypt library from a specific Cloudsmith repository -->
+    <!-- This sample pulls the java-crypt library from a specific Cloudsmith public repository -->
     <repositories>
         <repository>
-            <id>cloudsmith</id>
-            <url>https://maven.cloudsmith.io/paulowoody/java-crypt/</url>
+            <id>cloudsmith-paulowoody-java-crypt</id>
+            <url>https://dl.cloudsmith.io/public/paulowoody/java-crypt/maven/</url>
             <releases>
                 <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
             </releases>
             <snapshots>
                 <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
             </snapshots>
         </repository>
     </repositories>

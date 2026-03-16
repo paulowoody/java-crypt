@@ -202,6 +202,16 @@ With this configuration, you can run the scan simply by calling:
 mvn verify
 ```
 
+## Security
+
+This project prioritises cryptographic best practices while remaining a educational resource. Recent updates (March 2026) have addressed several key security areas:
+- **Entropy**: Transitioned to modern `SecureRandom` defaults for high-quality entropy.
+- **Key Strength**: Upgraded default RSA key sizes to 2048-bit.
+- **Robustness**: Fixed issues in password-based key derivation (PBKDF2) and added validation for malformed ciphertexts.
+- **Consistency**: Enforced UTF-8 charset across all cryptographic operations to ensure cross-platform compatibility.
+
+For a detailed technical breakdown of these fixes, see [docs/SecurityUpdates.md](docs/SecurityUpdates.md).
+
 ## Future
 The project already covers several foundational and practical applications of cryptography. To
 expand it with more real-world examples, we could consider the following:
@@ -242,6 +252,13 @@ expand it with more real-world examples, we could consider the following:
 ## Changes
 
 - 0.1.0-SNAPSHOT
+    - 2026-03-16, **Security & Robustness Improvements**:
+        - Fixed PBKDF2 salt handling to allow consistent key re-derivation.
+        - Transitioned to modern `SecureRandom` (replaced legacy `SHA1PRNG`).
+        - Increased default RSA key size from 1024-bit to 2048-bit.
+        - Improved robustness of symmetric decryption and signature extraction.
+        - Enforced UTF-8 charset consistency across all cryptographic operations.
+        - Added detailed documentation in [docs/SecurityUpdates.md](docs/SecurityUpdates.md).
     - 2026-03-16, Added OWASP Dependency‑Check for vulnerability scanning, security overrides for transitive dependencies, and enhanced Maven build with Javadoc and Source plugins.
     - 2026-03-13, Reorganized sample code into `samples/repro-demo` and aligned project structure.
     - 2026-03-10, Refactored to use ephemeral cryptographic keys in tests and support for Java 21+

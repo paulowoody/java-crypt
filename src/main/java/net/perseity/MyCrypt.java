@@ -74,10 +74,9 @@ public class MyCrypt implements SymmetricCipher {
      * protecting against pattern analysis.
      * 
      * @return A random IV as a byte array.
-     * @throws NoSuchAlgorithmException If the SecureRandom algorithm is not available.
      */
-    private byte[] generateIv() throws NoSuchAlgorithmException {
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+    private byte[] generateIv() {
+        SecureRandom random = new SecureRandom();
         byte[] iv = new byte[IV_SIZE];
         random.nextBytes(iv);
         return iv;
@@ -99,29 +98,43 @@ public class MyCrypt implements SymmetricCipher {
      * Helper to generate a random Salt for password-based key generation.
      * 
      * @return A random salt as a byte array.
-     * @throws NoSuchAlgorithmException If the SecureRandom algorithm is not available.
      */
-    private byte[] generateSalt() throws NoSuchAlgorithmException {
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+    public byte[] generateSalt() {
+        SecureRandom random = new SecureRandom();
         byte[] salt = new byte[SALT_SIZE];
         random.nextBytes(salt);
         return salt;
     }
 
     /**
-     * Derives a cryptographic key from a human-readable password using PBKDF2.
+     * Derives a cryptographic key from a human-readable password and a salt using PBKDF2.
      * This makes brute-force guessing much harder by iteratively hashing the password and salt.
      * 
      * @param password The user-provided password to derive the key from.
+     * @param salt The salt to use for derivation. Must be the same salt used during encryption to successfully decrypt.
      * @throws NoSuchAlgorithmException If the PBKDF2 algorithm is not available.
      * @throws InvalidKeySpecException If the password or salt specifications are invalid.
      */
-    public void generateKeyFromPassword(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] salt = generateSalt();
+    public void generateKeyFromPassword(String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
         KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt, PBE_ITERATIONS, KEY_SIZE);
         SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         SecretKey key = secretKeyFactory.generateSecret(keySpec);
         secretKey = new SecretKeySpec(key.getEncoded(), "AES");
+    }
+
+    /**
+     * Derives a cryptographic key from a human-readable password using PBKDF2 with a random salt.
+     * Note: To be able to re-derive this key later, you must know the salt used.
+     * 
+     * @param password The user-provided password.
+     * @return The randomly generated salt used for this derivation.
+     * @throws NoSuchAlgorithmException If the PBKDF2 algorithm is not available.
+     * @throws InvalidKeySpecException If the password specifications are invalid.
+     */
+    public byte[] generateKeyFromPassword(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        byte[] salt = generateSalt();
+        generateKeyFromPassword(password, salt);
+        return salt;
     }
 
     /**
@@ -190,6 +203,9 @@ public class MyCrypt implements SymmetricCipher {
     @Override
     public String decrypt(String ciphertext) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         byte[] ciphertextBytes = Helper.b64Decode(ciphertext);
+        if (ciphertextBytes.length < IV_SIZE) {
+            throw new IllegalArgumentException("Ciphertext is too short (must include IV).");
+        }
         Cipher cipher = Cipher.getInstance(AES_GCM_NOPADDING);
         int tLen = cipher.getBlockSize() * Byte.SIZE;
 

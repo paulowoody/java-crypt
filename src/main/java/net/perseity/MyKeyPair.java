@@ -27,9 +27,9 @@ public class MyKeyPair implements AsymmetricCipher {
     public static final String ALGORITHM = "RSASSA-PSS";
 
     /**
-     * Key size in bits (1024). Note: 1024 is considered weak today; 2048 or 4096 is recommended for production.
+     * Key size in bits (2048). 2048 or 4096 is recommended for production.
      */
-    private static final int SIZE = 1024;
+    private static final int SIZE = 2048;
 
     /**
      * Hash algorithm used for PSS signatures and OAEP padding (SHA-256).
@@ -69,7 +69,7 @@ public class MyKeyPair implements AsymmetricCipher {
     public MyKeyPair() throws NoSuchAlgorithmException {
         Security.setProperty("crypto.policy", "unlimited");
         KeyPairGenerator generator = KeyPairGenerator.getInstance(ALGORITHM);
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        SecureRandom random = new SecureRandom();
         generator.initialize(SIZE, random);
         keyPair = generator.generateKeyPair();
     }
@@ -163,7 +163,7 @@ public class MyKeyPair implements AsymmetricCipher {
     @Override
     public boolean isSignatureValid(String message, String signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, InvalidAlgorithmParameterException {
         byte[] signatureBytes = Helper.b64Decode(signature);
-        byte[] messageBytes = message.getBytes();
+        byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
         Signature signatureVerifier = Signature.getInstance(ALGORITHM);
         MGF1ParameterSpec mgf1Spec = MGF1ParameterSpec.SHA256;
         PSSParameterSpec pssParameterSpec = new PSSParameterSpec(HASH, MASK_GEN_FN, mgf1Spec, 32, 1); // Adjust salt length if needed

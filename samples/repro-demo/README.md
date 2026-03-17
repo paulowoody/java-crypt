@@ -14,6 +14,39 @@ The `pom.xml` is pre-configured to:
 2.  Include necessary dependencies like `log4j2` and `javax.mail`.
 3.  Apply mandatory JVM exports (`--add-exports java.base/sun.security.x509=ALL-UNNAMED`). This is required to expose Java's internal cryptographic libraries, allowing for a native crypto implementation (e.g., for TLS certificate generation) while avoiding external dependencies like Bouncy Castle.
 
+### Maven Usage
+
+If you are setting up your own project, ensure you have the following repository and dependency configuration:
+
+#### Repository Configuration
+
+```xml
+<repositories>
+  <repository>
+    <id>paulowoody-java-crypt</id>
+    <url>https://dl.cloudsmith.io/public/paulowoody/java-crypt/maven/</url>
+    <releases>
+      <enabled>true</enabled>
+      <updatePolicy>always</updatePolicy>
+    </releases>
+    <snapshots>
+      <enabled>true</enabled>
+      <updatePolicy>always</updatePolicy>
+    </snapshots>
+  </repository>
+</repositories>
+```
+
+#### Dependency Coordinates
+
+```xml
+<dependency>
+  <groupId>net.perseity</groupId>
+  <artifactId>java-crypt</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+
 ## How to Build & Test
 
 From the `repro-demo` directory, run:

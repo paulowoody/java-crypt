@@ -75,6 +75,39 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 - `MySecureEmail`: Demonstrates secure email concepts (signing, encrypting, decrypting, verifying) using standard Java cryptography instead of heavy third-party S/MIME libraries.
 - `Helper`: Provides common Base64 (Standard and URL-Safe) encoding/decoding and PEM file operations for Keys and Certificates.
 
+## Maven Usage
+
+The `java-crypt` library is deployed to a public Cloudsmith repository. To use it in your own Maven project, add the following to your `pom.xml`:
+
+### Repository Configuration
+
+```xml
+<repositories>
+  <repository>
+    <id>paulowoody-java-crypt</id>
+    <url>https://dl.cloudsmith.io/public/paulowoody/java-crypt/maven/</url>
+    <releases>
+      <enabled>true</enabled>
+      <updatePolicy>always</updatePolicy>
+    </releases>
+    <snapshots>
+      <enabled>true</enabled>
+      <updatePolicy>always</updatePolicy>
+    </snapshots>
+  </repository>
+</repositories>
+```
+
+### Dependency Coordinates
+
+```xml
+<dependency>
+  <groupId>net.perseity</groupId>
+  <artifactId>java-crypt</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+
 ## Building and Running
 
 Ensure you have Java 21 and Maven 3 installed.

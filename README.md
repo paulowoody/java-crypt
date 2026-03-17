@@ -24,44 +24,45 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 
 **Part 1: Key Pair Generation (Asymmetric)**
 
-1. Alice and Bob both generate their own personal RSA key pairs (`alice-key` and `bob-key`).
+1. Alice and Bob both generate their own personal RSA key pairs. 
+2. The generated keys are immediately **saved to disk** (`alice.pub`/`alice.key` and `bob.pub`/`bob.key`) and then **reloaded** to simulate a real-world persistent identity.
 
 **Part 2: Secure Key Exchange (Asymmetric + Symmetric)**
 
-2. Alice creates a random, highly secure AES shared secret.
-3. Alice encrypts the AES shared secret using **Bob's Public Key only**. By using a Public-Only instance, she ensures her own private key remains separate and safe.
-4. Bob receives the package and decrypts it using his Private RSA key. Both parties now share the same AES secret.
+3. Alice creates a random, highly secure AES shared secret.
+4. Alice **loads Bob's Public Key from the 'bob.pub' file**. By using a Public-Only instance, she ensures her own private key remains separate and safe.
+5. Bob receives the package and decrypts it using his Private RSA key. Both parties now share the same AES secret.
 
 **Part 3: Secure Messaging & Digital Signatures (Symmetric + Asymmetric)**
 
-5. Bob encrypts a secret message using the new AES shared secret (much faster for data than RSA).
-6. Bob signs the encrypted message using his Private RSA key to prove it came from him.
-7. Alice verifies the signature is valid using **Bob's Public Key only**.
-8. Alice decrypts the encrypted secret message using their shared AES secret.
+6. Bob encrypts a secret message using the new AES shared secret (much faster for data than RSA).
+7. Bob signs the encrypted message using his Private RSA key to prove it came from him.
+8. Alice verifies the signature is valid using **Bob's Public Key only**.
+9. Alice decrypts the encrypted secret message using their shared AES secret.
 
 **Part 4: Real-World JWT Scenario (HMAC)**
 
-9. A Server uses the shared secret as an HMAC key to generate a short-lived JSON Web Token (JWT) for a Client.
-10. The Client attaches the JWT to an API request.
-11. The Server verifies the token's cryptographic signature and expiration timestamp to grant access.
-12. A Hacker attempts to tamper with the token's payload, but the Server detects the invalid signature and rejects it.
+10. A Server uses the shared secret as an HMAC key to generate a short-lived JSON Web Token (JWT) for a Client.
+11. The Client attaches the JWT to an API request.
+12. The Server verifies the token's cryptographic signature and expiration timestamp to grant access.
+13. A Hacker attempts to tamper with the token's payload, but the Server detects the invalid signature and rejects it.
 
 **Part 5: Real-World TLS Certificate Scenario (X.509)**
 
-13. A Server (Alice) uses her RSA key pair to generate a self-signed TLS Certificate to secure an HTTPS website.
-14. A Client (Bob) connects and downloads the certificate.
-15. Bob verifies the digital signature of the certificate using Alice's trusted public key to ensure a secure, un-tampered connection.
-16. A Hacker (Eve) generates a forged certificate to impersonate Alice, but Bob detects the invalid signature and rejects the connection.
+14. A Server (Alice) uses her RSA key pair to generate a self-signed TLS Certificate to secure an HTTPS website.
+15. A Client (Bob) connects and downloads the certificate.
+16. Bob verifies the digital signature of the certificate using Alice's trusted public key to ensure a secure, un-tampered connection.
+17. A Hacker (Eve) generates a forged certificate to impersonate Alice, but Bob detects the invalid signature and rejects the connection.
 
 **Part 6: Secure Email Scenario (Custom Implementation without Third-Party CMS)**
 *Note: True S/MIME compliance requires formatting the cryptographic payloads using a complex standard called CMS (Cryptographic Message Syntax, or PKCS#7). The Java Standard Library does not have internal support for generating CMS `EnvelopedData` (Encryption). Therefore, to create a fully S/MIME compliant application that standard email clients can natively read, a third-party library like BouncyCastle is required. This project demonstrates the exact same cryptographic concepts (Authenticity, Integrity, and Confidentiality) using only standard Java RSA/AES.*
 
-17. Alice creates a standard MimeMessage and encrypts/signs it using standard AES and RSA.
-18. She encrypts the message payload using AES, and encrypts the AES session key using Bob's public RSA key.
-19. Bob receives the encrypted message and decrypts the session key using his Private Key, and uses it to decrypt the body.
-20. Bob verifies the signature on the decrypted content against Alice's public key to confirm she sent it and it hasn't been tampered with.
-21. A Hacker (Eve) intercepts the encrypted email in transit and attempts to decrypt it, but fails because she does not possess Bob's private key.
-22. A Hacker (Eve) attempts to forge an email claiming to be from Alice by signing it with her own key and encrypting it for Bob. Bob decrypts it, but detects the forgery because the signature verification fails against Alice's known public key.
+18. Alice creates a standard MimeMessage and encrypts/signs it using standard AES and RSA.
+19. She encrypts the message payload using AES, and encrypts the AES session key using Bob's public RSA key.
+20. Bob receives the encrypted message and decrypts the session key using his Private Key, and uses it to decrypt the body.
+21. Bob verifies the signature on the decrypted content against Alice's public key to confirm she sent it and it hasn't been tampered with.
+22. A Hacker (Eve) intercepts the encrypted email in transit and attempts to decrypt it, but fails because she does not possess Bob's private key.
+23. A Hacker (Eve) attempts to forge an email claiming to be from Alice by signing it with her own key and encrypting it for Bob. Bob decrypts it, but detects the forgery because the signature verification fails against Alice's known public key.
 
 ## Core Cryptographic Classes
 
@@ -287,6 +288,10 @@ expand it with more real-world examples, we could consider the following:
 ## Changes
 
 - 0.1.0-SNAPSHOT
+    - 2026-03-17, **Key Persistence & Loading**:
+        - Updated `Demo` to save generated RSA keys to disk and reload them.
+        - Alice now explicitly loads Bob's public key from a `.pub` file for encryption.
+        - Synchronized `samples/repro-demo` with these changes.
     - 2026-03-17, **Public Key Separation**:
         - Added explicit support for "Public-Key-Only" instances in `MyKeyPair`.
         - Added `getPublicOnly()` method to safely strip private keys before sharing.

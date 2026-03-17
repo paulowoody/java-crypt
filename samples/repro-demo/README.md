@@ -91,8 +91,8 @@ mvn test
 ## Expected Output
 
 The demo will perform the following steps:
-1.  **RSA Key Pair Generation:** Creates and saves public/private keys for "Alice" and "Bob".
-2.  **Key Exchange:** Alice encrypts an AES shared secret with Bob's public key; Bob decrypts it.
+1.  **RSA Key Pair Generation:** Alice and Bob generate their RSA key pairs, which are **saved to disk** (`alice.pub`/`alice.key` and `bob.pub`/`bob.key`) and then **reloaded** to simulate a persistent identity.
+2.  **Key Exchange:** Alice **loads Bob's Public Key from the 'bob.pub' file** and uses it to encrypt a random AES shared secret. Bob receives the package and decrypts it using his Private RSA key.
 3.  **Secure Messaging:** Bob sends an AES-encrypted and RSA-signed message to Alice; Alice verifies and decrypts it.
 4.  **JWT Scenario:** Demonstrates creating and verifying a JWT using the shared secret.
 5.  **TLS Certificate Scenario:** Generates a self-signed certificate for Alice and verifies it from Bob's perspective.

@@ -147,6 +147,23 @@ public class Helper {
     }
 
     /**
+     * Reads a Public key from disk.
+     * 
+     * @param publicKeyFile Path to the public key PEM file.
+     * @param algorithm The name of the algorithm (e.g. "RSA").
+     * @return A PublicKey object loaded from the file.
+     * @throws IOException If reading from the file fails.
+     * @throws NoSuchAlgorithmException If the specified algorithm is not supported.
+     * @throws InvalidKeySpecException If the key specifications are invalid.
+     */
+    public static PublicKey readPublicKey(String publicKeyFile, String algorithm) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        String publicKeyString = loadKey(publicKeyFile);
+        byte[] publicKeyBytes = b64Decode(publicKeyString);
+        KeyFactory keyFactory = KeyFactory.getInstance(algorithm);
+        return keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
+    }
+
+    /**
      * Reads a matching Public and Private key from disk.
      * 
      * @param publicKeyFile Path to the public key PEM file.
@@ -158,16 +175,27 @@ public class Helper {
      * @throws InvalidKeySpecException If the key specifications are invalid.
      */
     public static KeyPair readKeyPair(String publicKeyFile, String privateKeyFile, String algorithm) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        String publicKeyString = loadKey(publicKeyFile);
+        PublicKey publicKey = readPublicKey(publicKeyFile, algorithm);
         String privateKeyString = loadKey(privateKeyFile);
-
-        byte[] publicKeyBytes = b64Decode(publicKeyString);
         byte[] privateKeyBytes = b64Decode(privateKeyString);
 
         KeyFactory keyFactory = KeyFactory.getInstance(algorithm);
-        PublicKey publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyBytes));
         PrivateKey privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
         return new KeyPair(publicKey, privateKey);
+    }
+
+    /**
+     * Helper method to populate an existing AsymmetricCipher instance with a public key loaded from disk.
+     * 
+     * @param cipher The AsymmetricCipher instance to load the key into.
+     * @param publicKeyFile Path to the public key PEM file.
+     * @throws IOException If reading from the file fails.
+     * @throws NoSuchAlgorithmException If the algorithm used by the cipher is not supported.
+     * @throws InvalidKeySpecException If the key specifications are invalid.
+     */
+    public static void loadPublicKey(AsymmetricCipher cipher, String publicKeyFile) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        PublicKey publicKey = readPublicKey(publicKeyFile, cipher.getAlgorithm());
+        cipher.setKeyPair(new KeyPair(publicKey, null));
     }
 
     /**

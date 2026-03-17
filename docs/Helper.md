@@ -41,6 +41,10 @@ Helper.saveKeyPair(myKeyPair, "public.pem", "private.pem");
 AsymmetricCipher loadedKeys = new MyKeyPair();
 Helper.loadKeyPair(loadedKeys, "public.pem", "private.pem");
 
+// Load ONLY a Public Key from disk (for safe sharing)
+AsymmetricCipher bobPublicKey = new MyKeyPair();
+Helper.loadPublicKey(bobPublicKey, "bob-public.pem");
+
 // Read a Certificate
 X509Certificate cert = Helper.readCert("server-cert.pem");
 ```

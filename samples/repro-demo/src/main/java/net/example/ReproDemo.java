@@ -32,13 +32,18 @@ public class ReproDemo {
             System.out.println();
             LOGGER.info("=== 2. Key Exchange (RSA + AES) ===");
             LOGGER.info("[Alice] wants to establish a fast, secure channel with [Bob].");
+            
+            LOGGER.info("[Alice] gets [Bob]'s Public Key...");
+            MyKeyPair bobPublicKey = bobKeyPair.getPublicOnly();
+            LOGGER.info("(Alice) Bob's Public KeyID: {}", bobPublicKey.getPublicKeyId());
+
             LOGGER.info("[Alice] creates a random AES shared secret...");
             MyCrypt aliceCrypt = new MyCrypt();
             String sharedSecret = aliceCrypt.getSecretKey();
             LOGGER.info("Shared Secret: {}", sharedSecret);
 
             LOGGER.info("[Alice] encrypts the shared secret using [Bob]'s public key. Only [Bob] can decrypt it!");
-            String encryptedSharedSecret = bobKeyPair.encrypt(sharedSecret);
+            String encryptedSharedSecret = bobPublicKey.encrypt(sharedSecret);
             LOGGER.info("Encrypted Secret: {}", encryptedSharedSecret);
             LOGGER.info("[Alice] sends the encrypted secret to [Bob] over the public internet...\n");
 
@@ -61,7 +66,7 @@ public class ReproDemo {
             LOGGER.info("[Bob] sends the encrypted message and signature to [Alice]...\n");
 
             LOGGER.info("[Alice] receives the message. First, she verifies the signature using [Bob]'s public key...");
-            boolean isVerified = bobKeyPair.isSignatureValid(encrypted, bobSignature);
+            boolean isVerified = bobPublicKey.isSignatureValid(encrypted, bobSignature);
             if (isVerified) {
                 LOGGER.info("[Alice] Signature is verified. The message is authentic.");
             } else {
@@ -176,7 +181,8 @@ public class ReproDemo {
             
             LOGGER.info("[Bob] Receives the email, decrypts it using his Private Key, and verifies the signature...");
             
-            MySecureEmail.DecryptedEmail decryptedEmail = MySecureEmail.decryptAndVerify(receivedEmail, bobKeyPair, aliceKeyPair);
+            MyKeyPair alicePublicKey = aliceKeyPair.getPublicOnly();
+            MySecureEmail.DecryptedEmail decryptedEmail = MySecureEmail.decryptAndVerify(receivedEmail, bobKeyPair, alicePublicKey);
             
             if (decryptedEmail.isSignatureValid()) {
                 LOGGER.info("[Bob] Signature is VALID. The decrypted message is: '{}'", decryptedEmail.getMessage());
@@ -213,8 +219,8 @@ public class ReproDemo {
             // Bob loads the forged email from disk
             MimeMultipart receivedForgedEmail = Helper.loadMimeMultipart(forgedEmailFile);
             
-            // Bob decrypts it, but expects it to be from Alice (aliceKeyPair)
-            MySecureEmail.DecryptedEmail decryptedForgedEmail = MySecureEmail.decryptAndVerify(receivedForgedEmail, bobKeyPair, aliceKeyPair);
+            // Bob decrypts it, but expects it to be from Alice (alicePublicKey)
+            MySecureEmail.DecryptedEmail decryptedForgedEmail = MySecureEmail.decryptAndVerify(receivedForgedEmail, bobKeyPair, alicePublicKey);
             
             LOGGER.info("[Bob] Reads the message: '{}'", decryptedForgedEmail.getMessage());
             LOGGER.info("[Bob] Suspicious! He checks the signature status...");

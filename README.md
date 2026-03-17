@@ -29,14 +29,14 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 **Part 2: Secure Key Exchange (Asymmetric + Symmetric)**
 
 2. Alice creates a random, highly secure AES shared secret.
-3. Alice encrypts the AES shared secret using Bob's public RSA key (meaning only Bob can decrypt it).
-4. Bob receives the package and decrypts it using his private RSA key. Both parties now share the same AES secret.
+3. Alice encrypts the AES shared secret using **Bob's Public Key only**. By using a Public-Only instance, she ensures her own private key remains separate and safe.
+4. Bob receives the package and decrypts it using his Private RSA key. Both parties now share the same AES secret.
 
 **Part 3: Secure Messaging & Digital Signatures (Symmetric + Asymmetric)**
 
 5. Bob encrypts a secret message using the new AES shared secret (much faster for data than RSA).
-6. Bob signs the encrypted message using his private RSA key to prove it came from him.
-7. Alice verifies the signature is valid using Bob's public key.
+6. Bob signs the encrypted message using his Private RSA key to prove it came from him.
+7. Alice verifies the signature is valid using **Bob's Public Key only**.
 8. Alice decrypts the encrypted secret message using their shared AES secret.
 
 **Part 4: Real-World JWT Scenario (HMAC)**
@@ -285,6 +285,11 @@ expand it with more real-world examples, we could consider the following:
 ## Changes
 
 - 0.1.0-SNAPSHOT
+    - 2026-03-17, **Public Key Separation**:
+        - Added explicit support for "Public-Key-Only" instances in `MyKeyPair`.
+        - Added `getPublicOnly()` method to safely strip private keys before sharing.
+        - Added constructors and `Helper` methods to load only the public key from PEM files.
+        - Updated `Demo` and documentation to follow standard public-key infrastructure patterns.
     - 2026-03-16, **Security & Robustness Improvements**:
         - Fixed PBKDF2 salt handling to allow consistent key re-derivation.
         - Transitioned to modern `SecureRandom` (replaced legacy `SHA1PRNG`).

@@ -104,4 +104,38 @@ class MyKeyPairTest {
         assertNotNull(id);
         assertTrue(id.matches("^([0-9A-F]{2}:){7}[0-9A-F]{2}$"));
     }
+
+    @Test
+    void testPublicOnlyInstance() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, SignatureException {
+        MyKeyPair publicOnly = myKey.getPublicOnly();
+        
+        assertNotNull(publicOnly.getPublicKey());
+        assertNull(publicOnly.getPrivateKey());
+        assertEquals("N/A", publicOnly.getPrivateKeyId());
+        assertEquals(myKey.getPublicKeyId(), publicOnly.getPublicKeyId());
+
+        // Test encryption/verification works
+        String message = "Public Only Test";
+        String encrypted = publicOnly.encrypt(message);
+        String signature = myKey.sign(message);
+        assertTrue(publicOnly.isSignatureValid(message, signature));
+
+        // Test decryption/signing fails
+        assertThrows(IllegalStateException.class, () -> publicOnly.decrypt(encrypted));
+        assertThrows(IllegalStateException.class, () -> publicOnly.sign(message));
+    }
+
+    @Test
+    void testLoadPublicKeyOnly() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+        String pubPath = tempDir.resolve("myKey.pub").toString();
+        MyKeyPair publicOnly = new MyKeyPair(pubPath);
+
+        assertNotNull(publicOnly.getPublicKey());
+        assertNull(publicOnly.getPrivateKey());
+        assertEquals(myKey.getPublicKeyId(), publicOnly.getPublicKeyId());
+
+        // Test encryption works
+        String message = "Load Public Only Test";
+        assertDoesNotThrow(() -> publicOnly.encrypt(message));
+    }
 }

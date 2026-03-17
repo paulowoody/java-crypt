@@ -88,12 +88,44 @@ public class MyKeyPair implements AsymmetricCipher {
     }
 
     /**
+     * Loads only an existing RSA Public Key from a stored Base64 string file.
+     * 
+     * @param publicKeyFile Path to the public key PEM file.
+     * @throws IOException If reading from the file fails.
+     * @throws NoSuchAlgorithmException If the RSA algorithm is not available.
+     * @throws InvalidKeySpecException If the key specifications are invalid.
+     */
+    public MyKeyPair(String publicKeyFile) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        PublicKey publicKey = Helper.readPublicKey(publicKeyFile, ALGORITHM);
+        this.keyPair = new KeyPair(publicKey, null);
+    }
+
+    /**
+     * Creates a MyKeyPair instance from an existing PublicKey.
+     * 
+     * @param publicKey The PublicKey to use.
+     */
+    public MyKeyPair(PublicKey publicKey) {
+        this.keyPair = new KeyPair(publicKey, null);
+    }
+
+    /**
      * Manually sets the internal KeyPair instance.
      * 
      * @param keyPair The KeyPair instance to use.
      */
     public MyKeyPair(KeyPair keyPair) {
         this.keyPair = keyPair;
+    }
+
+    /**
+     * Creates a new instance of MyKeyPair that only contains the public key.
+     * This is useful for safely sharing public keys with others without exposing the private key.
+     * 
+     * @return A new MyKeyPair instance containing only the public key.
+     */
+    public MyKeyPair getPublicOnly() {
+        return new MyKeyPair(getPublicKey());
     }
 
     /**
@@ -117,12 +149,17 @@ public class MyKeyPair implements AsymmetricCipher {
      * @throws InvalidKeyException If the private key is invalid.
      * @throws IllegalBlockSizeException If the block size is invalid.
      * @throws BadPaddingException If the padding is incorrect.
+     * @throws IllegalStateException If the private key is missing (e.g., this is a public-key-only instance).
      */
     @Override
     public String decrypt(String encrypted) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        PrivateKey privateKey = getPrivateKey();
+        if (privateKey == null) {
+            throw new IllegalStateException("Private key is missing. This operation requires the private key.");
+        }
         byte[] decodedBytes = Helper.b64Decode(encrypted);
         Cipher cipher = Cipher.getInstance(CYPHER);
-        cipher.init(Cipher.DECRYPT_MODE, getPrivateKey());
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
         byte[] decryptedBytes = cipher.doFinal(decodedBytes);
         return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
@@ -141,8 +178,12 @@ public class MyKeyPair implements AsymmetricCipher {
      */
     @Override
     public String encrypt(String message) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        PublicKey publicKey = getPublicKey();
+        if (publicKey == null) {
+            throw new IllegalStateException("Public key is missing.");
+        }
         Cipher cipher = Cipher.getInstance(CYPHER);
-        cipher.init(Cipher.ENCRYPT_MODE, getPublicKey());
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
         byte[] encryptedBytes = cipher.doFinal(messageBytes);
         return Helper.b64Encode(encryptedBytes);
@@ -162,13 +203,17 @@ public class MyKeyPair implements AsymmetricCipher {
      */
     @Override
     public boolean isSignatureValid(String message, String signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, InvalidAlgorithmParameterException {
+        PublicKey publicKey = getPublicKey();
+        if (publicKey == null) {
+            throw new IllegalStateException("Public key is missing.");
+        }
         byte[] signatureBytes = Helper.b64Decode(signature);
         byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
         Signature signatureVerifier = Signature.getInstance(ALGORITHM);
         MGF1ParameterSpec mgf1Spec = MGF1ParameterSpec.SHA256;
         PSSParameterSpec pssParameterSpec = new PSSParameterSpec(HASH, MASK_GEN_FN, mgf1Spec, 32, 1); // Adjust salt length if needed
         signatureVerifier.setParameter(pssParameterSpec);
-        signatureVerifier.initVerify(getPublicKey());
+        signatureVerifier.initVerify(publicKey);
         signatureVerifier.update(messageBytes);
         return signatureVerifier.verify(signatureBytes);
 
@@ -184,14 +229,19 @@ public class MyKeyPair implements AsymmetricCipher {
      * @throws InvalidKeyException If the private key is invalid.
      * @throws SignatureException If signing fails.
      * @throws InvalidAlgorithmParameterException If the PSS parameters are invalid.
+     * @throws IllegalStateException If the private key is missing (e.g., this is a public-key-only instance).
      */
     @Override
     public String sign(String message) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, InvalidAlgorithmParameterException {
+        PrivateKey privateKey = getPrivateKey();
+        if (privateKey == null) {
+            throw new IllegalStateException("Private key is missing. This operation requires the private key.");
+        }
         Signature signature = Signature.getInstance(ALGORITHM);
         MGF1ParameterSpec mgf1Spec = MGF1ParameterSpec.SHA256;
         PSSParameterSpec pssParameterSpec = new PSSParameterSpec(HASH, MASK_GEN_FN, mgf1Spec, 32, 1); // Adjust salt length if needed
         signature.setParameter(pssParameterSpec);
-        signature.initSign(getPrivateKey());
+        signature.initSign(privateKey);
         byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
         signature.update(messageBytes);
         byte[] signedBytes = signature.sign();
@@ -201,21 +251,21 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Returns the underlying Java PrivateKey object.
      * 
-     * @return The private key from the internal KeyPair.
+     * @return The private key from the internal KeyPair, or null if it's missing.
      */
     @Override
     public PrivateKey getPrivateKey() {
-        return keyPair.getPrivate();
+        return (keyPair != null) ? keyPair.getPrivate() : null;
     }
 
     /**
      * Returns the underlying Java PublicKey object.
      * 
-     * @return The public key from the internal KeyPair.
+     * @return The public key from the internal KeyPair, or null if it's missing.
      */
     @Override
     public PublicKey getPublicKey() {
-        return keyPair.getPublic();
+        return (keyPair != null) ? keyPair.getPublic() : null;
     }
 
 
@@ -228,19 +278,27 @@ public class MyKeyPair implements AsymmetricCipher {
      */
     @Override
     public String getPublicKeyId() throws NoSuchAlgorithmException {
-        KeySpec publicKeySpec = getKeySpec(keyPair.getPublic());
+        PublicKey publicKey = getPublicKey();
+        if (publicKey == null) {
+            return "N/A";
+        }
+        KeySpec publicKeySpec = getKeySpec(publicKey);
         return calculateKeyId(publicKeySpec);
     }
 
     /**
      * Generates a short, unique identifier (fingerprint) for the Private Key.
      * 
-     * @return A hexadecimal string representing the Private Key's ID.
+     * @return A hexadecimal string representing the Private Key's ID, or "N/A" if missing.
      * @throws NoSuchAlgorithmException If the hash algorithm for calculation is not available.
      */
     @Override
     public String getPrivateKeyId() throws NoSuchAlgorithmException {
-        KeySpec privateKeySpec = getKeySpec(keyPair.getPrivate());
+        PrivateKey privateKey = getPrivateKey();
+        if (privateKey == null) {
+            return "N/A";
+        }
+        KeySpec privateKeySpec = getKeySpec(privateKey);
         return calculateKeyId(privateKeySpec);
     }
 

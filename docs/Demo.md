@@ -9,8 +9,8 @@ It acts as a comprehensive, narrative-driven tutorial. By running `Demo.java`, y
 The demonstration systematically walks through 6 distinct scenarios:
 
 1. **RSA Key Pair Generation:** Alice and Bob independently generate their asymmetric public/private key pairs.
-2. **Key Exchange (RSA + AES):** Alice generates a fast AES key, encrypts it with Bob's public RSA key, and sends it to him over the "internet".
-3. **Secure Messaging & Digital Signatures:** Bob encrypts a secret message using the shared AES key, signs it with his private RSA key, and sends it back to Alice.
+2. **Key Exchange (RSA + AES):** Alice gets Bob's **Public Key** and uses it to encrypt a fast, random AES key. She sends the encrypted package to Bob. Bob uses his **Private Key** to decrypt it.
+3. **Secure Messaging & Digital Signatures:** Bob encrypts a secret message with the shared AES key, signs it with his **Private Key**, and sends it back. Alice verifies the signature using Bob's **Public Key** to ensure authenticity.
 4. **Real-World JWT Scenario:** Demonstrates an API server generating a stateless JWT, a client successfully using it, and a hacker failing to forge a tampered JWT payload.
 5. **Real-World TLS Certificate Scenario:** Alice generates a self-signed X.509 certificate to secure an HTTPS endpoint. Bob downloads and verifies it. Eve attempts to impersonate Alice with a forged certificate, but Bob's verification catches the invalid signature.
 6. **Secure Email Scenario:** Alice uses a custom AES/RSA pipeline to sign and encrypt a MimeMultipart email for Bob. The email is saved to the filesystem as an `.eml` file. Eve intercepts it but cannot decrypt it. Eve then attempts to forge an email to Bob claiming to be from Alice, but Bob detects the forgery during signature verification.

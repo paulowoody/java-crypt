@@ -16,6 +16,15 @@ Because RSA is computationally expensive, it is typically used for exchanging sm
 - **Encryption Padding:** `RSA/ECB/OAEPWithSHA-256AndMGF1Padding` to prevent padding oracle attacks.
 - **Signature:** Uses `SHA-256` hashing with `MGF1` mask generation.
 
+## Public-Key-Only Instances
+A key feature of asymmetric cryptography is the ability to share your **Public Key** with others while keeping your **Private Key** secret. `MyKeyPair` supports "Public-Only" instances for this purpose.
+
+- **`getPublicOnly()`:** Creates a new `MyKeyPair` instance containing *only* the public key. This is the safe way to share your key with another party.
+- **`new MyKeyPair(publicKeyFile)`:** Loads only the public key from a PEM file.
+- **`new MyKeyPair(publicKey)`:** Creates an instance from an existing `java.security.PublicKey`.
+
+Operations that require a private key (`sign` and `decrypt`) will throw an `IllegalStateException` if called on a Public-Only instance.
+
 ## Usage Example
 
 ### Generating and Saving Keys
@@ -25,24 +34,31 @@ MyKeyPair keyPair = new MyKeyPair();
 
 // Save the keys to disk in PEM format
 Helper.saveKeyPair(keyPair, "public.pem", "private.pem");
+
+// Safely share your public key with Alice
+MyKeyPair publicOnlyForAlice = keyPair.getPublicOnly();
 ```
 
 ### Encrypting and Decrypting (Key Exchange)
 ```java
-// Sender encrypts a small secret (like an AES key) using the Recipient's Public Key
-String secret = "SuperSecretAESKey123!";
-String encryptedSecret = recipientKeyPair.encrypt(secret);
+// Alice loads Bob's Public Key from disk
+MyKeyPair bobsPublicKey = new MyKeyPair("bob-public.pem");
 
-// Recipient decrypts the secret using their Private Key
-String decryptedSecret = recipientKeyPair.decrypt(encryptedSecret);
+// Alice encrypts a small secret (like an AES key) using Bob's Public Key
+String secret = "SuperSecretAESKey123!";
+String encryptedSecret = bobsPublicKey.encrypt(secret);
+
+// Bob decrypts the secret using his full KeyPair (including Private Key)
+String decryptedSecret = bobsKeyPair.decrypt(encryptedSecret);
 ```
 
 ### Digital Signatures
 ```java
-// Sender signs a message payload with their Private Key
+// Bob signs a message payload with his Private Key
 String payload = "I authorize this transaction.";
-String signature = senderKeyPair.sign(payload);
+String signature = bobsKeyPair.sign(payload);
 
-// Recipient verifies the signature using the Sender's Public Key
-boolean isValid = senderKeyPair.isSignatureValid(payload, signature);
+// Alice verifies the signature using Bob's Public Key
+MyKeyPair bobsPublicKey = new MyKeyPair("bob-public.pem");
+boolean isValid = bobsPublicKey.isSignatureValid(payload, signature);
 ```

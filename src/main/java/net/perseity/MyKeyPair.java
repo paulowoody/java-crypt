@@ -281,36 +281,11 @@ public class MyKeyPair implements AsymmetricCipher {
         } else {
             throw new IllegalArgumentException("Unsupported key specification type");
         }
-        byte[] combinedBytes = appendByteArray(modulus.toByteArray(), exponent.toByteArray());
+        byte[] combinedBytes = Helper.appendByteArray(modulus.toByteArray(), exponent.toByteArray());
         MessageDigest sha256 = MessageDigest.getInstance(HASH);
         byte[] hash = sha256.digest(combinedBytes);
         byte[] keyId = new byte[8];
         System.arraycopy(hash, 0, keyId, 0, 8);
-        return bytesToHexString(keyId).toUpperCase();
-    }
-
-    /**
-     * Helper method to concatenate two byte arrays.
-     * 
-     * @param a The first byte array.
-     * @param b The second byte array.
-     * @return The combined byte array.
-     */
-    private byte[] appendByteArray(byte[] a, byte[] b) {
-        byte[] result = new byte[a.length + b.length];
-        System.arraycopy(a, 0, result, 0, a.length);
-        System.arraycopy(b, 0, result, a.length, b.length);
-        return result;
-    }
-
-    /**
-     * Converts a byte array into a colon-separated hexadecimal string format (e.g., "1A:2B:3C").
-     * 
-     * @param bytes The byte array to convert.
-     * @return The formatted hexadecimal String.
-     */
-    private String bytesToHexString(byte[] bytes) {
-        HexFormat hexFormat = HexFormat.ofDelimiter(":");
-        return hexFormat.formatHex(bytes).toUpperCase();
+        return Helper.bytesToHexString(keyId).toUpperCase();
     }
 }

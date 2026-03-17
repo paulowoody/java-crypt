@@ -284,4 +284,29 @@ public class Helper {
         mc.addMailcap("multipart/*;; x-java-content-handler=com.sun.mail.handlers.multipart_mixed");
         CommandMap.setDefaultCommandMap(mc);
     }
+
+    /**
+     * Helper method to concatenate two byte arrays.
+     * 
+     * @param a The first byte array.
+     * @param b The second byte array.
+     * @return The combined byte array.
+     */
+    public static byte[] appendByteArray(byte[] a, byte[] b) {
+        byte[] result = new byte[a.length + b.length];
+        System.arraycopy(a, 0, result, 0, a.length);
+        System.arraycopy(b, 0, result, a.length, b.length);
+        return result;
+    }
+
+    /**
+     * Converts a byte array into a colon-separated hexadecimal string format (e.g., "1A:2B:3C").
+     * 
+     * @param bytes The byte array to convert.
+     * @return The formatted hexadecimal String.
+     */
+    public static String bytesToHexString(byte[] bytes) {
+        java.util.HexFormat hexFormat = java.util.HexFormat.ofDelimiter(":");
+        return hexFormat.formatHex(bytes).toUpperCase();
+    }
 }

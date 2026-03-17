@@ -31,4 +31,23 @@ public interface SymmetricCipher {
      * @throws Exception If decryption fails due to invalid key, padding errors, etc.
      */
     String decrypt(String ciphertext) throws Exception;
+
+    /**
+     * Creates a base64 digital signature of the message using the shared secret key (HMAC).
+     * 
+     * @param message The message to sign.
+     * @return The digital signature as a base64 encoded String.
+     * @throws Exception If signing fails.
+     */
+    String sign(String message) throws Exception;
+
+    /**
+     * Verifies a base64 digital signature using the shared secret key (HMAC).
+     * 
+     * @param message The original message that was signed.
+     * @param signature The base64 encoded digital signature to verify.
+     * @return true if the signature is valid; false otherwise.
+     * @throws Exception If signature verification fails.
+     */
+    boolean isSignatureValid(String message, String signature) throws Exception;
 }

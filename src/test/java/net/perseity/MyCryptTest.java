@@ -67,4 +67,19 @@ class MyCryptTest {
         assertDoesNotThrow(() -> myCrypt.decrypt(encrypted));
         assertEquals(expected, myCrypt.decrypt(encrypted));
     }
+
+    @Test
+    void signAndVerify() throws Exception {
+        String message = "Hello, HMAC!";
+        String signature = myCrypt.sign(message);
+        org.junit.jupiter.api.Assertions.assertNotNull(signature);
+        org.junit.jupiter.api.Assertions.assertTrue(myCrypt.isSignatureValid(message, signature));
+    }
+
+    @Test
+    void verifyFailsWithWrongMessage() throws Exception {
+        String message = "Hello, HMAC!";
+        String signature = myCrypt.sign(message);
+        org.junit.jupiter.api.Assertions.assertFalse(myCrypt.isSignatureValid(message + " altered", signature));
+    }
 }

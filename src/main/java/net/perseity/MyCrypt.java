@@ -7,6 +7,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -180,9 +181,7 @@ public class MyCrypt implements SymmetricCipher {
         byte[] ciphertext = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
 
         // prepend IV bytes to ciphertext
-        byte[] encrypted = new byte[iv.length + ciphertext.length];
-        System.arraycopy(iv, 0, encrypted, 0, iv.length);
-        System.arraycopy(ciphertext, 0, encrypted, iv.length, ciphertext.length);
+        byte[] encrypted = Helper.appendByteArray(iv, ciphertext);
         return Helper.b64Encode(encrypted);
     }
 
@@ -217,5 +216,36 @@ public class MyCrypt implements SymmetricCipher {
         // extract ciphertext following iv
         byte[] plaintextBytes = cipher.doFinal(ciphertextBytes, iv.length, ciphertextBytes.length - iv.length);
         return new String(plaintextBytes, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Creates a digital signature for a message using HMAC SHA-256 and the shared secret key.
+     * 
+     * @param message The message to sign.
+     * @return The digital signature as a base64 encoded String.
+     * @throws NoSuchAlgorithmException If the HmacSHA256 algorithm is not available.
+     * @throws InvalidKeyException If the secret key is invalid.
+     */
+    @Override
+    public String sign(String message) throws NoSuchAlgorithmException, InvalidKeyException {
+        Mac hmac = Mac.getInstance("HmacSHA256");
+        hmac.init(secretKey);
+        byte[] signatureBytes = hmac.doFinal(message.getBytes(StandardCharsets.UTF_8));
+        return Helper.b64Encode(signatureBytes);
+    }
+
+    /**
+     * Verifies a digital signature for a message using HMAC SHA-256 and the shared secret key.
+     * 
+     * @param message The original message that was signed.
+     * @param signature The base64 encoded digital signature to verify.
+     * @return true if the signature is valid; false otherwise.
+     * @throws NoSuchAlgorithmException If the HmacSHA256 algorithm is not available.
+     * @throws InvalidKeyException If the secret key is invalid.
+     */
+    @Override
+    public boolean isSignatureValid(String message, String signature) throws NoSuchAlgorithmException, InvalidKeyException {
+        String expectedSignature = sign(message);
+        return MessageDigest.isEqual(Helper.b64Decode(expectedSignature), Helper.b64Decode(signature));
     }
 }

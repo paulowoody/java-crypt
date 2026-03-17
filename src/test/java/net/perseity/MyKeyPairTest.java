@@ -138,4 +138,34 @@ class MyKeyPairTest {
         String message = "Load Public Only Test";
         assertDoesNotThrow(() -> publicOnly.encrypt(message));
     }
+
+    @Test
+    void testPublicKeyConstructor() throws NoSuchAlgorithmException {
+        MyKeyPair publicOnly = new MyKeyPair(myKey.getPublicKey());
+        assertNotNull(publicOnly.getPublicKey());
+        assertNull(publicOnly.getPrivateKey());
+        assertEquals(myKey.getPublicKeyId(), publicOnly.getPublicKeyId());
+    }
+
+    @Test
+    void testKeyPairConstructor() {
+        java.security.KeyPair kp = new java.security.KeyPair(myKey.getPublicKey(), myKey.getPrivateKey());
+        MyKeyPair wrapped = new MyKeyPair(kp);
+        assertEquals(myKey.getPublicKey(), wrapped.getPublicKey());
+        assertEquals(myKey.getPrivateKey(), wrapped.getPrivateKey());
+    }
+
+    @Test
+    void testNullKeyScenarios() throws NoSuchAlgorithmException {
+        MyKeyPair empty = new MyKeyPair();
+        empty.setKeyPair(null);
+        
+        assertNull(empty.getPublicKey());
+        assertNull(empty.getPrivateKey());
+        assertEquals("N/A", empty.getPublicKeyId());
+        assertEquals("N/A", empty.getPrivateKeyId());
+        
+        assertThrows(IllegalStateException.class, () -> empty.encrypt("test"));
+        assertThrows(IllegalStateException.class, () -> empty.isSignatureValid("msg", "sig"));
+    }
 }

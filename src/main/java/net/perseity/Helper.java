@@ -221,8 +221,12 @@ public class Helper {
      * @throws IOException If writing to either file fails.
      */
     public static void saveKeyPair(AsymmetricCipher cipher, String publicKeyFile, String privateKeyFile) throws IOException {
-        saveKey(cipher.getPublicKey(), publicKeyFile);
-        saveKey(cipher.getPrivateKey(), privateKeyFile);
+        if (publicKeyFile != null && cipher.getPublicKey() != null) {
+            saveKey(cipher.getPublicKey(), publicKeyFile);
+        }
+        if (privateKeyFile != null && cipher.getPrivateKey() != null) {
+            saveKey(cipher.getPrivateKey(), privateKeyFile);
+        }
     }
 
     /**

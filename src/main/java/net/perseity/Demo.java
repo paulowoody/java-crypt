@@ -42,22 +42,30 @@ public class Demo {
             System.out.println();
             LOGGER.info("=== 1. Asymmetric Key Pair Generation (RSA) ===");
             LOGGER.info("[Alice] is generating her RSA key pair...");
-            MyKeyPair aliceKeyPair = new MyKeyPair();
-            LOGGER.info("Alice's Public KeyID: {}", aliceKeyPair.getPublicKeyId());
-            LOGGER.info("Alice's Private KeyID: {}", aliceKeyPair.getPrivateKeyId());
+            MyKeyPair aliceKeyPairGenerated = new MyKeyPair();
+            Helper.saveKeyPair(aliceKeyPairGenerated, "alice.pub", "alice.key");
+            LOGGER.info("Alice's keys generated and saved to alice.pub and alice.key");
 
             LOGGER.info("[Bob] is generating his RSA key pair...");
-            MyKeyPair bobKeyPair = new MyKeyPair();
-            LOGGER.info("Bob's Public KeyID: {}", bobKeyPair.getPublicKeyId());
-            LOGGER.info("Bob's Private KeyID: {}", bobKeyPair.getPrivateKeyId());
+            MyKeyPair bobKeyPairGenerated = new MyKeyPair();
+            Helper.saveKeyPair(bobKeyPairGenerated, "bob.pub", "bob.key");
+            LOGGER.info("Bob's keys generated and saved to bob.pub and bob.key");
+
+            // Now load them back to simulate a real scenario where they are already on disk
+            LOGGER.info("Reloading keys from disk to simulate a real scenario...");
+            MyKeyPair aliceKeyPair = new MyKeyPair("alice.pub", "alice.key");
+            MyKeyPair bobKeyPair = new MyKeyPair("bob.pub", "bob.key");
+
+            LOGGER.info("Alice's Loaded Public KeyID: {}", aliceKeyPair.getPublicKeyId());
+            LOGGER.info("Bob's Loaded Public KeyID: {}", bobKeyPair.getPublicKeyId());
 
             // --- Part 2: Key Exchange (RSA + AES) ---
             System.out.println();
             LOGGER.info("=== 2. Key Exchange (RSA + AES) ===");
             LOGGER.info("[Alice] wants to establish a fast, secure channel with [Bob].");
             
-            LOGGER.info("[Alice] gets [Bob]'s Public Key...");
-            MyKeyPair bobPublicKey = bobKeyPair.getPublicOnly();
+            LOGGER.info("[Alice] loads [Bob]'s Public Key from 'bob.pub'...");
+            MyKeyPair bobPublicKey = new MyKeyPair("bob.pub");
             LOGGER.info("(Alice) Bob's Public KeyID: {}", bobPublicKey.getPublicKeyId());
 
             LOGGER.info("[Alice] creates a random AES shared secret...");

@@ -4,45 +4,28 @@ import net.perseity.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Focuses on verifying that an external consumer can successfully use
+ * the library's primary features (JWT, Encryption, and KeyPairs).
+ */
 public class CryptoTest {
 
     @Test
-    public void testKeyPairGenerationAndEncryption() throws Exception {
-        MyKeyPair aliceKeyPair = new MyKeyPair();
-        MyKeyPair bobKeyPair = new MyKeyPair();
+    public void testClientUsageScenario() throws Exception {
+        // 1. Client generates keys
+        MyKeyPair clientKeys = new MyKeyPair();
+        assertNotNull(clientKeys.getPublicKeyId());
 
-        String secret = "test-secret";
-        String encrypted = bobKeyPair.encrypt(secret);
-        String decrypted = bobKeyPair.decrypt(encrypted);
+        // 2. Client uses TokenProvider (JWT)
+        TokenProvider tokenProvider = new MyJwt();
+        String secret = "client-shared-secret";
+        String token = tokenProvider.createToken("client_user", secret);
+        assertTrue(tokenProvider.verifyToken(token, secret));
 
-        assertEquals(secret, decrypted);
-    }
-
-    @Test
-    public void testSignature() throws Exception {
-        MyKeyPair bobKeyPair = new MyKeyPair();
-        String message = "This is a secret message";
-        String signature = bobKeyPair.sign(message);
-
-        assertTrue(bobKeyPair.isSignatureValid(message, signature));
-    }
-
-    @Test
-    public void testSymmetricEncryption() throws Exception {
-        MyCrypt crypt = new MyCrypt();
-        String message = "Hello World";
-        String encrypted = crypt.encrypt(message);
-        String decrypted = crypt.decrypt(encrypted);
-
-        assertEquals(message, decrypted);
-    }
-
-    @Test
-    public void testJwt() throws Exception {
-        String secret = "my-shared-secret";
-        String user = "alice_user";
-        String token = MyJwt.createToken(user, secret);
-        
-        assertTrue(MyJwt.verifyToken(token, secret));
+        // 3. Client uses SymmetricCipher (AES)
+        SymmetricCipher cipher = new MyCrypt();
+        String message = "Client Secret Message";
+        String encrypted = cipher.encrypt(message);
+        assertEquals(message, cipher.decrypt(encrypted));
     }
 }

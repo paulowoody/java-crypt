@@ -2,10 +2,12 @@ package net.perseity;
 
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Demonstrates how to create a secure (signed and encrypted) email using ONLY
  * standard Java cryptography (RSA and AES-GCM). 
+ * This class implements the {@link SecureMessageTransport} interface.
  * 
  * Note on S/MIME Compliance: 
  * This class mimics the exact cryptographic concepts of S/MIME (Authenticity, 
@@ -17,13 +19,13 @@ import javax.mail.internet.MimeMultipart;
  * clients (like Outlook or Apple Mail) can natively read, a heavy third-party 
  * CMS library like BouncyCastle is required.
  */
-public class MySecureEmail {
+public class MySecureEmail implements SecureMessageTransport {
 
     /**
-     * Private constructor to prevent instantiation of this utility class.
+     * Default constructor.
      */
-    private MySecureEmail() {
-        // Utility class
+    public MySecureEmail() {
+        // No-arg constructor
     }
 
     /**
@@ -36,7 +38,8 @@ public class MySecureEmail {
      * @return A MimeMultipart containing the encrypted session key and the encrypted payload.
      * @throws Exception If signing, encryption, or MIME part creation fails.
      */
-    public static MimeMultipart signAndEncrypt(String messageBody, AsymmetricCipher senderKeyPair, AsymmetricCipher recipientKeyPair) throws Exception {
+    @Override
+    public MimeMultipart signAndEncrypt(String messageBody, AsymmetricCipher senderKeyPair, AsymmetricCipher recipientKeyPair) throws Exception {
         // 1. Sign the message
         String signature = senderKeyPair.sign(messageBody);
         String signedMessagePayload = messageBody + "\n\n---SIGNATURE---\n" + signature;
@@ -77,18 +80,19 @@ public class MySecureEmail {
      * @return A DecryptedEmail object containing the decrypted message and its signature verification status.
      * @throws Exception If decryption, signature verification, or MIME parsing fails.
      */
-    public static DecryptedEmail decryptAndVerify(MimeMultipart encryptedEmail, AsymmetricCipher recipientKeyPair, AsymmetricCipher senderKeyPair) throws Exception {
+    @Override
+    public DecryptedEmail decryptAndVerify(MimeMultipart encryptedEmail, AsymmetricCipher recipientKeyPair, AsymmetricCipher senderKeyPair) throws Exception {
         MimeBodyPart keyPart = (MimeBodyPart) encryptedEmail.getBodyPart(0);
         MimeBodyPart payloadPart = (MimeBodyPart) encryptedEmail.getBodyPart(1);
 
         String encryptedSessionSecret;
         try (java.io.InputStream is = keyPart.getInputStream()) {
-            encryptedSessionSecret = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).trim();
+            encryptedSessionSecret = new String(is.readAllBytes(), StandardCharsets.UTF_8).trim();
         }
         
         String encryptedPayload;
         try (java.io.InputStream is = payloadPart.getInputStream()) {
-            encryptedPayload = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).trim();
+            encryptedPayload = new String(is.readAllBytes(), StandardCharsets.UTF_8).trim();
         }
 
         // 1. Decrypt the AES key using recipient's Private Key
@@ -111,45 +115,5 @@ public class MySecureEmail {
         boolean isSignatureValid = senderKeyPair.isSignatureValid(messageBody, signature);
 
         return new DecryptedEmail(messageBody, isSignatureValid);
-    }
-
-    /**
-     * Simple wrapper to hold the results of decryption and signature verification.
-     */
-    public static class DecryptedEmail {
-        /**
-         * The decrypted plaintext message.
-         */
-        private final String message;
-
-        /**
-         * Whether the signature was validly verified against the sender's public key.
-         */
-        private final boolean validSignature;
-
-        /**
-         * Constructs a new DecryptedEmail object.
-         * 
-         * @param message The decrypted plaintext message.
-         * @param validSignature Whether the signature is valid.
-         */
-        public DecryptedEmail(String message, boolean validSignature) {
-            this.message = message;
-            this.validSignature = validSignature;
-        }
-
-        /**
-         * Gets the decrypted message.
-         * 
-         * @return The message String.
-         */
-        public String getMessage() { return message; }
-
-        /**
-         * Checks if the digital signature was valid.
-         * 
-         * @return true if the signature is valid; false otherwise.
-         */
-        public boolean isSignatureValid() { return validSignature; }
     }
 }

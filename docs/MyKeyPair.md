@@ -15,6 +15,7 @@ Because RSA is computationally expensive, it is typically used for exchanging sm
 - **Key Size:** Defaults to **2048-bit**.
 - **Encryption Padding:** `RSA/ECB/OAEPWithSHA-256AndMGF1Padding` to prevent padding oracle attacks.
 - **Signature:** Uses `SHA-256` hashing with `MGF1` mask generation.
+- **Key Fingerprints:** `getPublicKeyId()` and `getPrivateKeyId()` generate unique 8-byte hexadecimal identifiers based on the key's mathematical components.
 
 ## Public-Key-Only Instances
 A key feature of asymmetric cryptography is the ability to share your **Public Key** with others while keeping your **Private Key** secret. `MyKeyPair` supports "Public-Only" instances for this purpose.
@@ -32,8 +33,13 @@ Operations that require a private key (`sign` and `decrypt`) will throw an `Ille
 // Generate a new random RSA Key Pair
 MyKeyPair keyPair = new MyKeyPair();
 
+// Log unique identifiers for the keys
+System.out.println("Public ID: " + keyPair.getPublicKeyId());
+System.out.println("Private ID: " + keyPair.getPrivateKeyId());
+
 // Save the keys to disk in PEM format
 Helper.saveKeyPair(keyPair, "public.pem", "private.pem");
+```
 
 // Safely share your public key with Alice
 MyKeyPair publicOnlyForAlice = keyPair.getPublicOnly();

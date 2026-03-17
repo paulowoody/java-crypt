@@ -1,36 +1,43 @@
-# MyJwt
+# MyJwt (TokenProvider)
 
-`MyJwt` is a lightweight utility for creating and verifying JSON Web Tokens (JWTs) using standard Java cryptography and `com.fasterxml.jackson.databind.ObjectMapper`.
+`MyJwt` implements the `TokenProvider` interface to handle the creation and verification of JSON Web Tokens (JWTs).
 
-## What is it for?
-JWTs are an industry standard (RFC 7519) used primarily for API authentication and authorization. A JWT is a URL-safe, base64-encoded string containing a JSON payload. 
-The token is cryptographically signed by the server so that the server can trust the data inside it without needing to look it up in a database on every request.
+## What is a JWT?
+JSON Web Tokens are an open, industry standard (RFC 7519) for representing claims securely between two parties. They are typically used for:
+- **Authentication**: After login, the server returns a JWT which the client includes in subsequent API requests.
+- **Information Exchange**: Securely transmitting information between parties. Because JWTs can be signed, you can be sure that the senders are who they say they are and that the content hasn't been tampered with.
 
-## How it works
-- **Algorithm:** `HMAC SHA-256` (HS256). This is a symmetric signing algorithm, meaning the server uses the same secret key to both sign the token and verify it later.
-- **Payload:** Automatically injects standard claims such as `sub` (Subject/User ID), `iss` (Issuer), `iat` (Issued At), `exp` (Expiration Time), and `jti` (JWT ID).
-- **Security:** If a malicious user intercepts the token and alters the payload (e.g., changing the `sub` to "admin"), the cryptographic verification will fail because the signature will no longer match the payload.
+## The TokenProvider Interface
+By implementing an interface, the library is prepared for future expansion. For example, you could add a `MyPaseto` implementation or an `RsaJwtProvider` without changing the application logic that depends on `TokenProvider`.
+
+```java
+public interface TokenProvider {
+    String createToken(String subject, String secret) throws Exception;
+    boolean verifyToken(String token, String secret);
+}
+```
+
+## Implementation Details
+This implementation uses **HMAC SHA-256** (Symmetric) to sign tokens.
+
+- **Header**: Contains the algorithm (`HS256`) and the token type (`JWT`).
+- **Payload**: Contains standard claims:
+  - `sub`: Subject (the user identity).
+  - `iss`: Issuer (`perseity.net`).
+  - `exp`: Expiration time (5 minutes).
+  - `iat`: Issued-at time.
+  - `jti`: Unique Token ID.
+- **Signature**: Prevents tampering. It is calculated as `HMACSHA256(Base64URL(Header) + "." + Base64URL(Payload), secret)`.
 
 ## Usage Example
 
-### Creating a Token
 ```java
-String serverSecret = "super_secret_server_key_12345";
-String userId = "user_89891";
+TokenProvider tokenProvider = new MyJwt();
+String secret = "VerySecretKey123!";
 
-// Creates a token valid for 24 hours
-String jwt = MyJwt.createToken(userId, serverSecret);
-System.out.println("Bearer " + jwt);
-```
+// 1. Create a token for a user
+String token = tokenProvider.createToken("alice", secret);
 
-### Verifying a Token
-```java
-// When the user makes an API request, verify the attached token
-boolean isAuthorized = MyJwt.verifyToken(jwt, serverSecret);
-
-if (isAuthorized) {
-    // Grant access
-} else {
-    // Return 401 Unauthorized (Token is expired, tampered with, or invalid)
-}
+// 2. Verify the token later
+boolean isValid = tokenProvider.verifyToken(token, secret);
 ```

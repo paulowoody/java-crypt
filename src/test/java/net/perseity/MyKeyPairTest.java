@@ -21,6 +21,10 @@ import java.security.spec.InvalidKeySpecException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for MyKeyPair class, verifying RSA encryption, 
+ * signature generation/verification, and public-only key handling.
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MyKeyPairTest {
     private static final Logger logger = LogManager.getLogger(MyKeyPairTest.class);
@@ -63,9 +67,9 @@ class MyKeyPairTest {
     void getEncrypted() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         String message = "Hello, World";
         String encrypted = myKey.encrypt(message);
-        // RSA OAEP encryption length depends on the key size. 1024-bit key produces 128 bytes, 
-        // which when base64 encoded is around 172 characters.
-        assertTrue(encrypted.length() > 100);
+        // RSA OAEP encryption length depends on the key size. 2048-bit key produces 256 bytes, 
+        // which when base64 encoded is around 344 characters.
+        assertTrue(encrypted.length() > 200);
     }
 
     @Test

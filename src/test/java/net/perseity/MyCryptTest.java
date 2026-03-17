@@ -17,6 +17,10 @@ import java.security.spec.InvalidKeySpecException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for MyCrypt class, verifying symmetric encryption, 
+ * password-based key derivation, and HMAC signatures.
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MyCryptTest {
     private static final Logger logger = LogManager.getLogger(MyCryptTest.class);

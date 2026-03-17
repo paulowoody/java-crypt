@@ -19,6 +19,10 @@ import java.security.spec.InvalidKeySpecException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for Helper utility class, verifying Base64 encoding, 
+ * PEM file operations, and MIME/Mailcap configuration.
+ */
 class HelperTest {
 
     private Path tempDir;

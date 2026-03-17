@@ -9,6 +9,10 @@ import java.io.ByteArrayOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for MySecureEmail class, verifying the full 
+ * sign-and-encrypt / decrypt-and-verify flow for secure messaging.
+ */
 class MySecureEmailTest {
 
     private MyKeyPair senderKeyPair;

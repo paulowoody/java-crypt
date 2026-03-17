@@ -6,6 +6,10 @@ import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for MyJwt class, verifying JWT creation, 
+ * signature verification, tampering detection, and expiration handling.
+ */
 class MyJwtTest {
 
     private TokenProvider tokenProvider;

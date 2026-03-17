@@ -18,21 +18,23 @@ import java.util.UUID;
 
 /**
  * Handles the creation and verification of JSON Web Tokens (JWTs).
+ * This implementation implements the {@link TokenProvider} interface.
+ * 
  * JWTs are used for securely transmitting information between parties as a JSON object.
  * This implementation uses HMAC SHA-256 (symmetric key) to sign the tokens,
  * meaning both the creator and the verifier must share the same secret key.
  */
-public class MyJwt {
+public class MyJwt implements TokenProvider {
     /**
      * Jackson ObjectMapper for JSON serialization and deserialization.
      */
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     /**
-     * Private constructor to prevent instantiation of this utility class.
+     * Default constructor.
      */
-    private MyJwt() {
-        // Utility class
+    public MyJwt() {
+        // No-arg constructor
     }
 
     /**
@@ -51,7 +53,8 @@ public class MyJwt {
      * @throws InvalidKeyException If the secret key is invalid.
      * @throws JsonProcessingException If JSON serialization of the header or payload fails.
      */
-    public static String createToken(String subject, String secret) throws NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
+    @Override
+    public String createToken(String subject, String secret) throws NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
         Instant now = Instant.now();
         Instant expiry = now.plus(5, ChronoUnit.MINUTES);
 
@@ -85,7 +88,8 @@ public class MyJwt {
      * @param secret The shared secret key expected to have been used to sign the token.
      * @return True if the token is structurally valid, the signature matches, and it is not expired. False otherwise.
      */
-    public static boolean verifyToken(String token, String secret) {
+    @Override
+    public boolean verifyToken(String token, String secret) {
         try {
             String[] parts = token.split("\\.");
             if (parts.length != 3) {
@@ -129,7 +133,7 @@ public class MyJwt {
      * @throws NoSuchAlgorithmException If the HmacSHA256 algorithm is not available.
      * @throws InvalidKeyException If the secret key is invalid.
      */
-    private static String sign(String message, String secret) throws NoSuchAlgorithmException, InvalidKeyException {
+    private String sign(String message, String secret) throws NoSuchAlgorithmException, InvalidKeyException {
         byte[] hash = secret.getBytes(StandardCharsets.UTF_8);
         Mac sha256Hmac = Mac.getInstance("HmacSHA256");
         SecretKeySpec secretKey = new SecretKeySpec(hash, "HmacSHA256");

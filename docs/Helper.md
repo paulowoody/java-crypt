@@ -45,8 +45,9 @@ Helper.loadKeyPair(loadedKeys, "public.pem", "private.pem");
 AsymmetricCipher bobPublicKey = new MyKeyPair();
 Helper.loadPublicKey(bobPublicKey, "bob-public.pem");
 
-// Read a Certificate
+// Read and Save X.509 Certificates
 X509Certificate cert = Helper.readCert("server-cert.pem");
+Helper.saveCert(cert, "backup-cert.pem");
 ```
 
 ### Email I/O

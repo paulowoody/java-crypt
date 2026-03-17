@@ -21,6 +21,10 @@ import java.security.spec.InvalidKeySpecException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for MyKeyPair class, verifying RSA encryption, 
+ * signature generation/verification, and public-only key handling.
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MyKeyPairTest {
     private static final Logger logger = LogManager.getLogger(MyKeyPairTest.class);
@@ -63,9 +67,9 @@ class MyKeyPairTest {
     void getEncrypted() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         String message = "Hello, World";
         String encrypted = myKey.encrypt(message);
-        // RSA OAEP encryption length depends on the key size. 1024-bit key produces 128 bytes, 
-        // which when base64 encoded is around 172 characters.
-        assertTrue(encrypted.length() > 100);
+        // RSA OAEP encryption length depends on the key size. 2048-bit key produces 256 bytes, 
+        // which when base64 encoded is around 344 characters.
+        assertTrue(encrypted.length() > 200);
     }
 
     @Test
@@ -137,5 +141,35 @@ class MyKeyPairTest {
         // Test encryption works
         String message = "Load Public Only Test";
         assertDoesNotThrow(() -> publicOnly.encrypt(message));
+    }
+
+    @Test
+    void testPublicKeyConstructor() throws NoSuchAlgorithmException {
+        MyKeyPair publicOnly = new MyKeyPair(myKey.getPublicKey());
+        assertNotNull(publicOnly.getPublicKey());
+        assertNull(publicOnly.getPrivateKey());
+        assertEquals(myKey.getPublicKeyId(), publicOnly.getPublicKeyId());
+    }
+
+    @Test
+    void testKeyPairConstructor() {
+        java.security.KeyPair kp = new java.security.KeyPair(myKey.getPublicKey(), myKey.getPrivateKey());
+        MyKeyPair wrapped = new MyKeyPair(kp);
+        assertEquals(myKey.getPublicKey(), wrapped.getPublicKey());
+        assertEquals(myKey.getPrivateKey(), wrapped.getPrivateKey());
+    }
+
+    @Test
+    void testNullKeyScenarios() throws NoSuchAlgorithmException {
+        MyKeyPair empty = new MyKeyPair();
+        empty.setKeyPair(null);
+        
+        assertNull(empty.getPublicKey());
+        assertNull(empty.getPrivateKey());
+        assertEquals("N/A", empty.getPublicKeyId());
+        assertEquals("N/A", empty.getPrivateKeyId());
+        
+        assertThrows(IllegalStateException.class, () -> empty.encrypt("test"));
+        assertThrows(IllegalStateException.class, () -> empty.isSignatureValid("msg", "sig"));
     }
 }

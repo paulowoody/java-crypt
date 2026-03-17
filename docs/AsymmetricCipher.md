@@ -18,15 +18,26 @@ Any class implementing this interface must provide implementations for:
 - `String sign(String message)`: Generating a Base64 cryptographic signature of a payload using the Private Key.
 - `boolean isSignatureValid(String message, String signature)`: Verifying a Base64 signature against a payload using the Public Key.
 - `String getAlgorithm()`: Returning the standard Java algorithm name (e.g., `"RSA"`, `"EC"`).
+- `PublicKey getPublicKey()`: Returning the underlying Java `PublicKey` object.
+- `PrivateKey getPrivateKey()`: Returning the underlying Java `PrivateKey` object.
+- `void setKeyPair(KeyPair keyPair)`: Manually setting the internal `KeyPair`.
+- `String getPublicKeyId()`: Generating a short, unique hex fingerprint of the Public Key.
+- `String getPrivateKeyId()`: Generating a short, unique hex fingerprint of the Private Key.
 
 ## Usage Example
 ```java
 // Programming to the interface allows easy swapping of algorithms
 AsymmetricCipher cipher = new MyKeyPair(); // Currently implements RSA
 
+// Get unique IDs (Fingerprints) for logging or comparison
+// Example output: "A1:B2:C3:D4:..."
+String pubId = cipher.getPublicKeyId();
+String privId = cipher.getPrivateKeyId();
+
 String secret = "Sensitive Data";
 String encrypted = cipher.encrypt(secret);
 String decrypted = cipher.decrypt(encrypted);
+```
 
 String signature = cipher.sign(secret);
 boolean isValid = cipher.isSignatureValid(secret, signature);

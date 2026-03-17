@@ -3,19 +3,29 @@ package net.perseity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
+import java.io.ByteArrayOutputStream;
+
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for MySecureEmail class, verifying the full 
+ * sign-and-encrypt / decrypt-and-verify flow for secure messaging.
+ */
 class MySecureEmailTest {
 
     private MyKeyPair senderKeyPair;
     private MyKeyPair recipientKeyPair;
     private MyKeyPair attackerKeyPair;
+    private SecureMessageTransport emailTransport;
 
     @BeforeEach
     void setUp() throws Exception {
         senderKeyPair = new MyKeyPair();
         recipientKeyPair = new MyKeyPair();
         attackerKeyPair = new MyKeyPair();
+        emailTransport = new MySecureEmail();
     }
 
     @Test
@@ -23,15 +33,15 @@ class MySecureEmailTest {
         String originalMessage = "This is a highly classified secret message.";
 
         // Encrypt and Sign
-        javax.mail.internet.MimeMultipart secureEmail = MySecureEmail.signAndEncrypt(originalMessage, senderKeyPair, recipientKeyPair);
+        MimeMultipart secureEmail = emailTransport.signAndEncrypt(originalMessage, senderKeyPair, recipientKeyPair);
 
         // Simulate network transmission
-        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         secureEmail.writeTo(baos);
-        javax.mail.internet.MimeMultipart receivedEmail = new javax.mail.internet.MimeMultipart(new javax.mail.util.ByteArrayDataSource(baos.toByteArray(), "multipart/mixed"));
+        MimeMultipart receivedEmail = new MimeMultipart(new ByteArrayDataSource(baos.toByteArray(), "multipart/mixed"));
 
         // Decrypt and Verify
-        MySecureEmail.DecryptedEmail result = MySecureEmail.decryptAndVerify(receivedEmail, recipientKeyPair, senderKeyPair);
+        SecureMessageTransport.DecryptedEmail result = emailTransport.decryptAndVerify(receivedEmail, recipientKeyPair, senderKeyPair);
 
         assertEquals(originalMessage, result.getMessage());
         assertTrue(result.isSignatureValid());
@@ -40,11 +50,11 @@ class MySecureEmailTest {
     @Test
     void testEveIntercepts() throws Exception {
         String originalMessage = "Secret for Bob";
-        javax.mail.internet.MimeMultipart secureEmail = MySecureEmail.signAndEncrypt(originalMessage, senderKeyPair, recipientKeyPair);
+        MimeMultipart secureEmail = emailTransport.signAndEncrypt(originalMessage, senderKeyPair, recipientKeyPair);
 
         // Eve tries to decrypt with her own key instead of Bob's
         assertThrows(Exception.class, () -> {
-            MySecureEmail.decryptAndVerify(secureEmail, attackerKeyPair, senderKeyPair);
+            emailTransport.decryptAndVerify(secureEmail, attackerKeyPair, senderKeyPair);
         }, "Eve should not be able to decrypt the message encrypted for Bob.");
     }
 
@@ -53,11 +63,29 @@ class MySecureEmailTest {
         String forgedMessage = "Transfer the money to me.";
         
         // Eve encrypts it for Bob, but signs it with her own key (claiming to be Alice)
-        javax.mail.internet.MimeMultipart secureEmail = MySecureEmail.signAndEncrypt(forgedMessage, attackerKeyPair, recipientKeyPair);
+        MimeMultipart secureEmail = emailTransport.signAndEncrypt(forgedMessage, attackerKeyPair, recipientKeyPair);
 
         // Bob receives it and decrypts it, but expects the signature to be from Alice (senderKeyPair)
-        MySecureEmail.DecryptedEmail result = MySecureEmail.decryptAndVerify(secureEmail, recipientKeyPair, senderKeyPair);
+        SecureMessageTransport.DecryptedEmail result = emailTransport.decryptAndVerify(secureEmail, recipientKeyPair, senderKeyPair);
 
         assertFalse(result.isSignatureValid(), "The signature should be invalid because it was not signed by Alice.");
+    }
+
+    @Test
+    void testMalformedSecureEmail() throws Exception {
+        // Create an email with missing delimiter
+        SymmetricCipher sessionCrypt = new MyCrypt();
+        String encrypted = sessionCrypt.encrypt("No delimiter here");
+        String encryptedKey = recipientKeyPair.encrypt(sessionCrypt.getSecretKey());
+
+        MimeMultipart multipart = new MimeMultipart();
+        javax.mail.internet.MimeBodyPart keyPart = new javax.mail.internet.MimeBodyPart();
+        keyPart.setText(encryptedKey);
+        javax.mail.internet.MimeBodyPart payloadPart = new javax.mail.internet.MimeBodyPart();
+        payloadPart.setText(encrypted);
+        multipart.addBodyPart(keyPart);
+        multipart.addBodyPart(payloadPart);
+
+        assertThrows(SecurityException.class, () -> emailTransport.decryptAndVerify(multipart, recipientKeyPair, senderKeyPair));
     }
 }

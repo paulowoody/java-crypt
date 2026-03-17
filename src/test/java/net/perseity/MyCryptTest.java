@@ -13,10 +13,14 @@ import javax.crypto.NoSuchPaddingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for MyCrypt class, verifying symmetric encryption, 
+ * password-based key derivation, and HMAC signatures.
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MyCryptTest {
     private static final Logger logger = LogManager.getLogger(MyCryptTest.class);
@@ -72,14 +76,33 @@ class MyCryptTest {
     void signAndVerify() throws Exception {
         String message = "Hello, HMAC!";
         String signature = myCrypt.sign(message);
-        org.junit.jupiter.api.Assertions.assertNotNull(signature);
-        org.junit.jupiter.api.Assertions.assertTrue(myCrypt.isSignatureValid(message, signature));
+        assertNotNull(signature);
+        assertTrue(myCrypt.isSignatureValid(message, signature));
     }
 
     @Test
     void verifyFailsWithWrongMessage() throws Exception {
         String message = "Hello, HMAC!";
         String signature = myCrypt.sign(message);
-        org.junit.jupiter.api.Assertions.assertFalse(myCrypt.isSignatureValid(message + " altered", signature));
+        assertFalse(myCrypt.isSignatureValid(message + " altered", signature));
+    }
+
+    @Test
+    void testDecryptTooShort() {
+        assertThrows(IllegalArgumentException.class, () -> myCrypt.decrypt(Helper.b64Encode(new byte[11])));
+    }
+
+    @Test
+    void testKeyFromPasswordAndSalt() throws Exception {
+        String password = "StrongPassword123";
+        byte[] salt = myCrypt.generateSalt();
+        
+        myCrypt.generateKeyFromPassword(password, salt);
+        String key1 = myCrypt.getSecretKey();
+        
+        myCrypt.generateKeyFromPassword(password, salt);
+        String key2 = myCrypt.getSecretKey();
+        
+        assertEquals(key1, key2);
     }
 }

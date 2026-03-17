@@ -13,10 +13,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for Helper utility class, verifying Base64 encoding, 
+ * PEM file operations, and MIME/Mailcap configuration.
+ */
 class HelperTest {
 
     private Path tempDir;
@@ -97,6 +103,53 @@ class HelperTest {
         MyKeyPair targetKeyPair = new MyKeyPair();
         Helper.loadKeyPair(targetKeyPair, pubKeyFile.toString(), privKeyFile.toString());
         assertArrayEquals(originalKeyPair.getPublicKey().getEncoded(), targetKeyPair.getPublicKey().getEncoded());
+    }
+
+    @Test
+    void testReadAndLoadPublicKey() throws Exception {
+        MyKeyPair originalKeyPair = new MyKeyPair();
+        Path pubKeyFile = tempDir.resolve("public_only.pub");
+        Helper.saveKeyPair(originalKeyPair, pubKeyFile.toString(), null);
+
+        // Test readPublicKey
+        java.security.PublicKey loadedPub = Helper.readPublicKey(pubKeyFile.toString(), MyKeyPair.ALGORITHM);
+        assertArrayEquals(originalKeyPair.getPublicKey().getEncoded(), loadedPub.getEncoded());
+
+        // Test loadPublicKey into instance
+        MyKeyPair targetKeyPair = new MyKeyPair();
+        Helper.loadPublicKey(targetKeyPair, pubKeyFile.toString());
+        assertArrayEquals(originalKeyPair.getPublicKey().getEncoded(), targetKeyPair.getPublicKey().getEncoded());
+        assertNull(targetKeyPair.getPrivateKey());
+    }
+
+    @Test
+    void testSaveKeyPairEdgeCases() throws Exception {
+        MyKeyPair keyPair = new MyKeyPair();
+        Path pubPath = tempDir.resolve("only.pub");
+        Path privPath = tempDir.resolve("only.key");
+
+        // 1. Save only private
+        Helper.saveKeyPair(keyPair, null, privPath.toString());
+        assertTrue(Files.exists(privPath));
+        assertFalse(Files.exists(pubPath));
+
+        // 2. Save with both null (should not throw)
+        assertDoesNotThrow(() -> Helper.saveKeyPair(keyPair, null, null));
+
+        // 3. Save a public-only instance (private should be skipped)
+        MyKeyPair publicOnly = keyPair.getPublicOnly();
+        Path privPath2 = tempDir.resolve("should_not_exist.key");
+        Helper.saveKeyPair(publicOnly, pubPath.toString(), privPath2.toString());
+        assertTrue(Files.exists(pubPath));
+        assertFalse(Files.exists(privPath2));
+    }
+
+    @Test
+    void testLoadKeyPairFileNotFound() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        MyKeyPair targetKeyPair = new MyKeyPair();
+        assertThrows(IOException.class, () -> 
+            Helper.loadKeyPair(targetKeyPair, "non-existent.pub", "non-existent.key")
+        );
     }
 
     @Test

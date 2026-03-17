@@ -8,6 +8,10 @@ import java.security.cert.X509Certificate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for MyTLSCert class, verifying X.509 certificate 
+ * generation, self-signing, and PEM serialization.
+ */
 class MyTLSCertTest {
 
     @TempDir

@@ -12,7 +12,7 @@ Because RSA is computationally expensive, it is typically used for exchanging sm
 
 ## How it works
 - **Algorithm:** `RSASSA-PSS` for signatures and key generation.
-- **Key Size:** Defaults to 1024-bit (note: 2048 or 4096 is recommended for production).
+- **Key Size:** Defaults to **2048-bit**.
 - **Encryption Padding:** `RSA/ECB/OAEPWithSHA-256AndMGF1Padding` to prevent padding oracle attacks.
 - **Signature:** Uses `SHA-256` hashing with `MGF1` mask generation.
 

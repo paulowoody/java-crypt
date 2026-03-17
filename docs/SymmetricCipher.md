@@ -13,6 +13,8 @@ Any class implementing this interface must provide:
 - `String getSecretKey()`: Returning the active shared secret encoded as a Base64 string for easy transport.
 - `String encrypt(String plaintext)`: Encrypting a standard string into a Base64-encoded ciphertext.
 - `String decrypt(String ciphertext)`: Decrypting a Base64-encoded ciphertext back to its original plaintext.
+- `String sign(String message)`: Creating a Base64 digital signature of a message using the shared secret (HMAC).
+- `boolean isSignatureValid(String message, String signature)`: Verifying a Base64 digital signature using the shared secret (HMAC).
 
 ## Usage Example
 ```java
@@ -24,7 +26,15 @@ String sharedSecretKey = sessionCrypt.getSecretKey();
 
 String ciphertext = sessionCrypt.encrypt("Large classified document payload.");
 
+// Use the shared secret to sign the ciphertext (Authenticated Messaging)
+String hmacSignature = sessionCrypt.sign(ciphertext);
+
 // The recipient initializes their own cipher using the shared secret
 SymmetricCipher recipientCrypt = new MyCrypt(sharedSecretKey);
-String originalMessage = recipientCrypt.decrypt(ciphertext);
+
+// 1. Verify integrity and authenticity first
+if (recipientCrypt.isSignatureValid(ciphertext, hmacSignature)) {
+    // 2. Decrypt if the signature is valid
+    String originalMessage = recipientCrypt.decrypt(ciphertext);
+}
 ```

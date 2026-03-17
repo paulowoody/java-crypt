@@ -6,9 +6,20 @@
 Cryptography relies heavily on moving binary byte arrays between different formats and transporting them across networks. `Helper` standardizes:
 - **Base64 Encoding/Decoding:** Standard and URL-Safe representations.
 - **PEM File Operations:** Writing and reading RSA Keys and X.509 Certificates using standard Privacy-Enhanced Mail (PEM) headers (e.g., `-----BEGIN PUBLIC KEY-----`).
+- **Binary Utilities:** Standardizing core cryptographic operations like concatenating byte arrays and converting hashes to human-readable hex strings.
 - **JavaMail Configuration:** Ensures the JVM handles specific MIME types correctly.
 
 ## Usage Examples
+
+### Binary Utilities
+```java
+// Concatenate two byte arrays (e.g., IV + Ciphertext)
+byte[] combined = Helper.appendByteArray(arrayA, arrayB);
+
+// Convert a hash (e.g., a Key Fingerprint) to a colon-separated hex string
+// Output: "A1:B2:C3:D4:..."
+String hexString = Helper.bytesToHexString(someHashBytes);
+```
 
 ### Base64 Encoding
 ```java

@@ -9,11 +9,21 @@ Symmetric cryptography uses the **exact same key** to both encrypt and decrypt d
 - Because both parties need the same key, it is usually combined with RSA to securely exchange the AES key first.
 
 ## How it works
-- **Algorithm:** `AES/GCM/NoPadding`. GCM is an authenticated encryption mode, meaning it not only encrypts the data but also ensures it hasn't been tampered with.
+- **Encryption Algorithm:** `AES/GCM/NoPadding`. GCM is an authenticated encryption mode, meaning it not only encrypts the data but also ensures it hasn't been tampered with.
 - **Key Size:** 256-bit AES keys.
 - **Initialization Vector (IV):** Generates a random 12-byte IV for every encryption operation to ensure identical plaintexts produce completely different ciphertexts. The IV is safely prepended to the final ciphertext so the decryptor can read it.
+- **Signature Algorithm:** `HmacSHA256`. Uses the same shared secret key to create and verify message authentication codes (MACs).
 
 ## Usage Example
+
+### Symmetric Digital Signatures (HMAC)
+```java
+// Alice signs a message with the shared secret
+String signature = crypt.sign(plaintext);
+
+// Bob verifies the signature using the same shared secret
+boolean isValid = decryptor.isSignatureValid(plaintext, signature);
+```
 
 ### Basic Encryption & Decryption
 ```java

@@ -27,3 +27,11 @@ This document outlines the security improvements and bug fixes implemented in Ma
 ## 6. Charset Consistency
 **Issue**: `MyKeyPair.isSignatureValid` was using the platform's default charset when converting the message String to bytes. This could lead to signature verification failures if the code was run on different systems with different default encodings (e.g., UTF-8 vs. Windows-1252).
 **Fix**: Explicitly specified `StandardCharsets.UTF_8` for all String-to-byte conversions, ensuring consistent behavior across all platforms.
+
+## 7. Improved Separation of Concerns and Symmetric Signing
+**Issue**: Common cryptographic utilities (like byte array concatenation and hex string conversion) were duplicated across several classes. Additionally, while the library supported asymmetric signatures (RSA), it lacked a standard way to perform symmetric signing (HMAC), which is often more efficient for message authentication.
+**Fix**:
+- **Centralized Utilities**: Moved `appendByteArray` and `bytesToHexString` to the `Helper` class. This reduces code duplication and ensures a single, well-tested implementation for these core binary operations.
+- **Symmetric Signing (HMAC-SHA256)**: Added `sign` and `isSignatureValid` methods to the `SymmetricCipher` interface and implemented them in `MyCrypt` using **HMAC-SHA256**. This provides a consistent API for both symmetric and asymmetric message authentication.
+- **Refined Encryption**: Updated `MyCrypt.encrypt` to use the centralized `Helper.appendByteArray` utility for prepending Initialization Vectors (IVs) to ciphertexts, improving code readability and maintainability.
+

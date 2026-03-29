@@ -40,3 +40,10 @@ build/
 *.pub
 *.pem
 *.eml
+
+# Track the .mvn folder but ignore timing/temp files
+!.mvn/
+.mvn/timing.properties
+
+# Ignore local Python .venv
+/.venv/

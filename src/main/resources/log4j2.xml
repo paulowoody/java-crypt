@@ -1,4 +1,4 @@
-<Configuration status="info" name="java-crypt" packages="">
+<Configuration status="info" name="java-crypt">
     <Loggers>
         <Root level="INFO">
             <AppenderRef ref="stdout" />

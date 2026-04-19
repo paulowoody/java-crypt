@@ -1,3 +1,14 @@
+# Security Updates (April 2026)
+
+This document outlines the security improvements and bug fixes implemented in April 2026 to ensure the library follows modern cryptographic best practices.
+
+## 1. Hashing Before Signing
+**Issue**: The `sign` and `isSignatureValid` methods in `MyCrypt` (HMAC) and `MyKeyPair` (RSASSA-PSS) were directly processing the message bytes. While functional, it is a best practice to sign a fixed-length cryptographic hash of the message rather than the variable-length message itself, especially for very large payloads.
+**Fix**: 
+- **Centralized Hashing**: Added a `Helper.hash(String message)` method that computes a SHA-256 digest.
+- **Improved Signing**: Updated all `sign` and `isSignatureValid` implementations in `MyCrypt` and `MyKeyPair` to hash the message first using SHA-256. This ensures consistent performance and adheres to stronger cryptographic patterns.
+- **Updated Interfaces**: Refined the `SymmetricCipher` and `AsymmetricCipher` Javadocs and documentation to reflect this architectural change.
+
 # Security Updates (March 2026)
 
 This document outlines the security improvements and bug fixes implemented in March 2026 to ensure the library follows modern cryptographic best practices and handles edge cases robustly.

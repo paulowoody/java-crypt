@@ -332,6 +332,18 @@ public class Helper {
     }
 
     /**
+     * Computes a SHA-256 hash of the given message.
+     * 
+     * @param message The message to hash.
+     * @return The SHA-256 hash as a byte array.
+     * @throws NoSuchAlgorithmException If the SHA-256 algorithm is not available.
+     */
+    public static byte[] hash(String message) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        return digest.digest(message.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
      * Converts a byte array into a colon-separated hexadecimal string format (e.g., "1A:2B:3C").
      * 
      * @param bytes The byte array to convert.

@@ -219,18 +219,19 @@ public class MyCrypt implements SymmetricCipher {
     }
 
     /**
-     * Creates a digital signature for a message using HMAC SHA-256 and the shared secret key.
+     * Creates a digital signature for a message using HMAC SHA-256 of the message's SHA-256 hash.
      * 
      * @param message The message to sign.
      * @return The digital signature as a base64 encoded String.
-     * @throws NoSuchAlgorithmException If the HmacSHA256 algorithm is not available.
+     * @throws NoSuchAlgorithmException If the HmacSHA256 or SHA-256 algorithm is not available.
      * @throws InvalidKeyException If the secret key is invalid.
      */
     @Override
     public String sign(String message) throws NoSuchAlgorithmException, InvalidKeyException {
+        byte[] messageHash = Helper.hash(message);
         Mac hmac = Mac.getInstance("HmacSHA256");
         hmac.init(secretKey);
-        byte[] signatureBytes = hmac.doFinal(message.getBytes(StandardCharsets.UTF_8));
+        byte[] signatureBytes = hmac.doFinal(messageHash);
         return Helper.b64Encode(signatureBytes);
     }
 
@@ -240,7 +241,7 @@ public class MyCrypt implements SymmetricCipher {
      * @param message The original message that was signed.
      * @param signature The base64 encoded digital signature to verify.
      * @return true if the signature is valid; false otherwise.
-     * @throws NoSuchAlgorithmException If the HmacSHA256 algorithm is not available.
+     * @throws NoSuchAlgorithmException If the HmacSHA256 or SHA-256 algorithm is not available.
      * @throws InvalidKeyException If the secret key is invalid.
      */
     @Override

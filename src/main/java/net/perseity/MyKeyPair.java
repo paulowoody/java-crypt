@@ -196,7 +196,7 @@ public class MyKeyPair implements AsymmetricCipher {
      * @param message The original message that was signed.
      * @param signature The base64 encoded digital signature to verify.
      * @return true if the signature is valid; false otherwise.
-     * @throws NoSuchAlgorithmException If the signature algorithm is not available.
+     * @throws NoSuchAlgorithmException If the signature or hash algorithm is not available.
      * @throws InvalidKeyException If the public key is invalid.
      * @throws SignatureException If signature verification fails.
      * @throws InvalidAlgorithmParameterException If the PSS parameters are invalid.
@@ -208,13 +208,13 @@ public class MyKeyPair implements AsymmetricCipher {
             throw new IllegalStateException("Public key is missing.");
         }
         byte[] signatureBytes = Helper.b64Decode(signature);
-        byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
+        byte[] messageHash = Helper.hash(message);
         Signature signatureVerifier = Signature.getInstance(ALGORITHM);
         MGF1ParameterSpec mgf1Spec = MGF1ParameterSpec.SHA256;
         PSSParameterSpec pssParameterSpec = new PSSParameterSpec(HASH, MASK_GEN_FN, mgf1Spec, 32, 1); // Adjust salt length if needed
         signatureVerifier.setParameter(pssParameterSpec);
         signatureVerifier.initVerify(publicKey);
-        signatureVerifier.update(messageBytes);
+        signatureVerifier.update(messageHash);
         return signatureVerifier.verify(signatureBytes);
 
     }
@@ -225,7 +225,7 @@ public class MyKeyPair implements AsymmetricCipher {
      * 
      * @param message The message to sign.
      * @return The digital signature as a base64 encoded String.
-     * @throws NoSuchAlgorithmException If the signature algorithm is not available.
+     * @throws NoSuchAlgorithmException If the signature or hash algorithm is not available.
      * @throws InvalidKeyException If the private key is invalid.
      * @throws SignatureException If signing fails.
      * @throws InvalidAlgorithmParameterException If the PSS parameters are invalid.
@@ -242,8 +242,8 @@ public class MyKeyPair implements AsymmetricCipher {
         PSSParameterSpec pssParameterSpec = new PSSParameterSpec(HASH, MASK_GEN_FN, mgf1Spec, 32, 1); // Adjust salt length if needed
         signature.setParameter(pssParameterSpec);
         signature.initSign(privateKey);
-        byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
-        signature.update(messageBytes);
+        byte[] messageHash = Helper.hash(message);
+        signature.update(messageHash);
         byte[] signedBytes = signature.sign();
         return Helper.b64Encode(signedBytes);
     }

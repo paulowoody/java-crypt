@@ -14,7 +14,7 @@ Because RSA is computationally expensive, it is typically used for exchanging sm
 - **Algorithm:** `RSASSA-PSS` for signatures and key generation.
 - **Key Size:** Defaults to **2048-bit**.
 - **Encryption Padding:** `RSA/ECB/OAEPWithSHA-256AndMGF1Padding` to prevent padding oracle attacks.
-- **Signature:** Uses `SHA-256` hashing with `MGF1` mask generation.
+- **Signature:** Uses `RSASSA-PSS` to sign the **SHA-256 hash** of the message, with `MGF1` mask generation.
 - **Key Fingerprints:** `getPublicKeyId()` and `getPrivateKeyId()` generate unique 8-byte hexadecimal identifiers based on the key's mathematical components.
 
 ## Public-Key-Only Instances

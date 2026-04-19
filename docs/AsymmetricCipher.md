@@ -15,8 +15,8 @@ Asymmetric cryptography algorithms always require two paired keys:
 Any class implementing this interface must provide implementations for:
 - `String encrypt(String message)`: Encrypting a plaintext payload into Base64 using the Public Key.
 - `String decrypt(String encrypted)`: Decrypting a Base64 ciphertext back to plaintext using the Private Key.
-- `String sign(String message)`: Generating a Base64 cryptographic signature of a payload using the Private Key.
-- `boolean isSignatureValid(String message, String signature)`: Verifying a Base64 signature against a payload using the Public Key.
+- `String sign(String message)`: Generating a Base64 cryptographic signature of a message's SHA-256 hash using the Private Key.
+- `boolean isSignatureValid(String message, String signature)`: Verifying a Base64 signature against a message's SHA-256 hash using the Public Key.
 - `String getAlgorithm()`: Returning the standard Java algorithm name (e.g., `"RSA"`, `"EC"`).
 - `PublicKey getPublicKey()`: Returning the underlying Java `PublicKey` object.
 - `PrivateKey getPrivateKey()`: Returning the underlying Java `PrivateKey` object.

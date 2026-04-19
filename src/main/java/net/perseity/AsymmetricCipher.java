@@ -37,7 +37,7 @@ public interface AsymmetricCipher {
     String encrypt(String message) throws Exception;
 
     /**
-     * Verifies a base64 digital signature using the Public Key.
+     * Verifies a base64 digital signature of the message's SHA-256 hash using the Public Key.
      * 
      * @param message The original message that was signed.
      * @param signature The base64 encoded digital signature to verify.
@@ -47,7 +47,7 @@ public interface AsymmetricCipher {
     boolean isSignatureValid(String message, String signature) throws Exception;
 
     /**
-     * Creates a base64 digital signature of the message using the Private Key.
+     * Creates a base64 digital signature of the message's SHA-256 hash using the Private Key.
      * 
      * @param message The message to sign.
      * @return The digital signature as a base64 encoded String.

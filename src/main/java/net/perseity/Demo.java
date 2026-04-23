@@ -3,7 +3,7 @@ package net.perseity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.mail.internet.MimeMultipart;
+import jakarta.mail.internet.MimeMultipart;
 import java.security.cert.X509Certificate;
 
 /**

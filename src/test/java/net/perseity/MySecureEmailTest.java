@@ -3,8 +3,8 @@ package net.perseity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.util.ByteArrayDataSource;
 import java.io.ByteArrayOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -79,9 +79,9 @@ class MySecureEmailTest {
         String encryptedKey = recipientKeyPair.encrypt(sessionCrypt.getSecretKey());
 
         MimeMultipart multipart = new MimeMultipart();
-        javax.mail.internet.MimeBodyPart keyPart = new javax.mail.internet.MimeBodyPart();
+        jakarta.mail.internet.MimeBodyPart keyPart = new jakarta.mail.internet.MimeBodyPart();
         keyPart.setText(encryptedKey);
-        javax.mail.internet.MimeBodyPart payloadPart = new javax.mail.internet.MimeBodyPart();
+        jakarta.mail.internet.MimeBodyPart payloadPart = new jakarta.mail.internet.MimeBodyPart();
         payloadPart.setText(encrypted);
         multipart.addBodyPart(keyPart);
         multipart.addBodyPart(payloadPart);

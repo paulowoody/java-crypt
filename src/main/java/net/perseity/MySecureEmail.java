@@ -1,7 +1,7 @@
 package net.perseity;
 
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMultipart;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import java.nio.charset.StandardCharsets;
 
 /**

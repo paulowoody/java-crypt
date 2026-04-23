@@ -4,10 +4,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.activation.CommandMap;
-import javax.activation.MailcapCommandMap;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMultipart;
+import jakarta.activation.CommandMap;
+import jakarta.activation.MailcapCommandMap;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

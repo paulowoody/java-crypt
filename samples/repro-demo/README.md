@@ -11,7 +11,7 @@ This is a reproduction project for the `java-crypt` library, designed to demonst
 
 The `pom.xml` is pre-configured to:
 1.  Pull the `java-crypt` library from the [Cloudsmith Repository](https://maven.cloudsmith.io/paulowoody/java-crypt/).
-2.  Include necessary dependencies like `log4j2` and `javax.mail`.
+2.  Include necessary dependencies like `log4j2` and `org.eclipse.angus:angus-mail` (Jakarta Mail).
 3.  Apply mandatory JVM exports (`--add-exports java.base/sun.security.x509=ALL-UNNAMED`). This is required to expose Java's internal cryptographic libraries, allowing for a native crypto implementation (e.g., for TLS certificate generation) while avoiding external dependencies like Bouncy Castle.
 
 ### Maven Usage

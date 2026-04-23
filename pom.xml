@@ -101,16 +101,14 @@
             </plugin>
 
             <!-- 4. Maven Compiler Plugin: Configures the Java compiler.
-                 CRITICAL: We must use '-source' and '-target' instead of 'release' because 'release' 
-                 strictly prevents access to internal JVM APIs (sun.security.x509) which we use 
-                 for native TLS certificate generation. -->
+                 CRITICAL: We use 'maven.compiler.source/target' properties (set above) instead of
+                 the 'release' flag, because 'release' strictly prevents access to internal JVM APIs
+                 (sun.security.x509) which we use for native TLS certificate generation. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.12.1</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
                     <compilerArgs>
                         <arg>-proc:none</arg>
                         <arg>-Xlint:all</arg>
@@ -125,7 +123,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <version>3.5.2</version>
                 <configuration>
                     <argLine>@{argLine} --add-exports java.base/sun.security.x509=ALL-UNNAMED</argLine>
                 </configuration>
@@ -180,7 +178,11 @@
                 <version>3.4.2</version>
             </plugin>
 
-            <!-- 9. JaCoCo Maven Plugin: Measures and reports code coverage for tests. -->
+            <!-- 9. JaCoCo Maven Plugin: Measures and reports code coverage for tests.
+                  - prepare-agent: instruments bytecode before tests run (binds to initialize phase).
+                  - report: generates HTML/XML/CSV reports after tests (binds to test phase).
+                  - check: enforces the 80% instruction coverage minimum (binds to verify phase,
+                    so 'mvn test' skips this gate; 'mvn verify' enforces it). -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -205,6 +207,7 @@
                     </execution>
                     <execution>
                         <id>check</id>
+                        <phase>verify</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>
@@ -233,7 +236,7 @@
                 <artifactId>cyclonedx-maven-plugin</artifactId>
                 <version>2.7.9</version>
                 <configuration>
-                    <schemaVersion>1.4</schemaVersion>
+                    <schemaVersion>1.6</schemaVersion>
                     <outputFormat>all</outputFormat>
                     <includeCompileScope>true</includeCompileScope>
                     <includeProvidedScope>false</includeProvidedScope>
@@ -254,17 +257,11 @@
             </plugin>
 
             <!-- 11. Exec Maven Plugin: Allows running the Demo directly from Maven.
-                  - default configuration: runs net.perseity.Demo with required JVM exports.
-                  - coverage-summary: uses 'awk' to print a nice coverage percentage in the logs.
-                  
-                  NOTE: We use combine.self="override" in the executions below to prevent them from 
-                  incorrectly inheriting the Java-specific arguments (like add-exports) defined 
-                  in the default configuration above. This ensures non-Java tools like 'awk' 
-                  receive only their intended parameters. -->
+                  - default configuration: runs net.perseity.Demo with required JVM exports. -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.3.0</version>
                 <configuration>
                     <executable>java</executable>
                     <arguments>
@@ -329,7 +326,7 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.25.3</version>
+            <version>2.25.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -349,11 +346,12 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.18.6</version>
         </dependency>
-        <!-- Java Mail for Secure Email (MIME) demonstration -->
+        <!-- Jakarta Mail (Eclipse Angus) for Secure Email (MIME) demonstration.
+             Replaces the deprecated com.sun.mail:javax.mail; uses jakarta.mail.* namespace. -->
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-            <version>1.6.2</version>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+            <version>2.0.4</version>
         </dependency>
     </dependencies>
 

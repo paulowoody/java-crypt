@@ -117,8 +117,8 @@ Ensure you have Java 21 and Maven 3 installed.
 
 ### Compiler Configuration
 This project uses internal JVM APIs (`sun.security.x509`) for certificate generation to avoid external dependencies. As a result, the `pom.xml` is configured with:
-- `-source 21` and `-target 21` instead of `--release 21`, as the latter strictly enforces public API boundaries and would block access to internal classes.
-- `-Xlint:-options` to suppress the compiler warning about not setting the system module location when using `-source`.
+- `maven.compiler.source=21` and `maven.compiler.target=21` set via `<properties>` instead of the `release` flag, as `release` strictly enforces public API boundaries and would block access to internal classes.
+- `-Xlint:-options` to suppress the compiler warning about not setting the system module location when using source/target without release.
 - `--add-exports` to allow the compiler and runtime to access the necessary internal packages.
 
 To compile, run the unit tests, and package the application, run:
@@ -142,6 +142,8 @@ To run the unit tests and automatically generate a JaCoCo code coverage report (
 mvn clean test
 ```
 
+*Note: The 80% instruction coverage gate (JaCoCo `check`) is bound to the `verify` phase, not `test`. Running `mvn clean test` generates the report but does not enforce the threshold. Use `mvn clean verify` to enforce coverage.*
+
 ## Samples
 
 In addition to the main library, this repository includes sample projects that demonstrate how to integrate `java-crypt` into your own applications.
@@ -151,6 +153,7 @@ Located in `samples/repro-demo`, this project shows how to:
 - Configure a Maven project to depend on the `java-crypt` library.
 - Access the Cloudsmith Maven repository.
 - Correctly set up the JVM export flags (`--add-exports`) required for certificate generation.
+- Include the `org.eclipse.angus:angus-mail` dependency (Jakarta Mail) required for the secure email scenario.
 - Implement a full cryptographic flow using the library.
 
 To build and run the sample:
@@ -288,6 +291,13 @@ expand it with more real-world examples, we could consider the following:
 ## Changes
 
 - 0.1.0-SNAPSHOT
+    - 2026-04-24, **Dependency & Build Hygiene**:
+        - Migrated from deprecated `com.sun.mail:javax.mail` to `org.eclipse.angus:angus-mail:2.0.3` (Jakarta Mail). All mail imports updated from `javax.mail.*` to `jakarta.mail.*` namespace across all source and test files. Internal mailcap handler references updated to `org.eclipse.angus.mail.handlers.*`.
+        - Aligned `log4j-api` and `log4j-core` versions to `2.25.4` (was mismatched at `2.25.3`/`2.25.4`).
+        - Updated CycloneDX SBOM schema version from `1.4` to `1.6`.
+        - Updated `maven-surefire-plugin` to `3.5.2` and `exec-maven-plugin` to `3.3.0`.
+        - Removed redundant `<source>`/`<target>` from compiler plugin configuration; these are now controlled solely by `maven.compiler.source/target` properties.
+        - Made the JaCoCo `check` phase binding explicit (`verify`) and documented the `mvn test` vs `mvn verify` distinction for coverage enforcement.
     - 2026-03-17, **Key Persistence & Loading**:
         - Updated `Demo` to save generated RSA keys to disk and reload them.
         - Alice now explicitly loads Bob's public key from a `.pub` file for encryption.

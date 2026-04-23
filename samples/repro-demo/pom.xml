@@ -50,17 +50,18 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.25.3</version>
+            <version>2.25.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.25.3</version>
+            <version>2.25.4</version>
         </dependency>
+        <!-- Jakarta Mail (Eclipse Angus) — replaces deprecated com.sun.mail:javax.mail -->
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-            <version>1.6.2</version>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+            <version>2.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -95,14 +96,13 @@
             </plugin>
 
             <!-- 2. Maven Compiler Plugin: Accesses internal sun.security APIs.
-                 Note the use of add-exports to bypass Java Module System restrictions. -->
+                 Uses maven.compiler.source/target properties (not 'release') to allow
+                 access to internal JVM APIs (sun.security.x509). -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.12.1</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
                     <compilerArgs>
                         <arg>-proc:none</arg>
                         <arg>-Xlint:all</arg>
@@ -116,7 +116,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <version>3.5.2</version>
                 <configuration>
                     <argLine>--add-exports java.base/sun.security.x509=ALL-UNNAMED</argLine>
                 </configuration>
@@ -159,7 +159,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.3.0</version>
                 <configuration>
                     <executable>java</executable>
                     <arguments>

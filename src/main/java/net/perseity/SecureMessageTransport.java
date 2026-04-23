@@ -1,6 +1,6 @@
 package net.perseity;
 
-import javax.mail.internet.MimeMultipart;
+import jakarta.mail.internet.MimeMultipart;
 
 /**
  * Defines a high-level contract for secure message transport.

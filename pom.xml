@@ -76,9 +76,7 @@
             </plugin>
 
             <!-- 3. Maven Javadoc Plugin: Generates API documentation from code comments.
-                 Visibility is set to 'protected' to document the public API while hiding internal implementation details.
-                 The 'additionalOption' is required because Javadoc needs access to the same internal sun.security 
-                 packages used by the library itself. -->
+                 Visibility is set to 'protected' to document the public API while hiding internal implementation details. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -86,9 +84,6 @@
                 <configuration>
                     <show>protected</show>
                     <nohelp>true</nohelp>
-                    <additionalOptions>
-                        <additionalOption>--add-exports java.base/sun.security.x509=ALL-UNNAMED</additionalOption>
-                    </additionalOptions>
                 </configuration>
                 <executions>
                     <execution>
@@ -100,10 +95,7 @@
                 </executions>
             </plugin>
 
-            <!-- 4. Maven Compiler Plugin: Configures the Java compiler.
-                 CRITICAL: We use 'maven.compiler.source/target' properties (set above) instead of
-                 the 'release' flag, because 'release' strictly prevents access to internal JVM APIs
-                 (sun.security.x509) which we use for native TLS certificate generation. -->
+            <!-- 4. Maven Compiler Plugin: Configures the Java compiler. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -112,27 +104,23 @@
                     <compilerArgs>
                         <arg>-proc:none</arg>
                         <arg>-Xlint:all</arg>
-                        <arg>-Xlint:-options</arg> <!-- Suppress warnings about using source/target without release -->
-                        <arg>--add-exports=java.base/sun.security.x509=ALL-UNNAMED</arg>
+                        <arg>-Xlint:-options</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
 
-            <!-- 5. Maven Surefire Plugin: Runs Unit Tests.
-                 We pass the same 'add-exports' flag to the JVM running the tests so MyTLSCert works in test mode. -->
+            <!-- 5. Maven Surefire Plugin: Runs Unit Tests. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
-                    <argLine>@{argLine} --add-exports java.base/sun.security.x509=ALL-UNNAMED</argLine>
+                    <argLine>@{argLine}</argLine>
                 </configuration>
             </plugin>
 
             <!-- 6. Maven Assembly Plugin: Creates a "Fat JAR" containing all dependencies.
-                 This allows the library/demo to be run as a standalone executable via 'java -jar'.
-                 The manifest entries ensure that when the JAR is run, it correctly declares its 
-                 requirement for internal module access. -->
+                 This allows the library/demo to be run as a standalone executable via 'java -jar'. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -152,7 +140,6 @@
                                     <mainClass>net.perseity.Demo</mainClass>
                                 </manifest>
                                 <manifestEntries>
-                                    <Add-Exports>java.base/sun.security.x509</Add-Exports>
                                     <Multi-Release>true</Multi-Release>
                                 </manifestEntries>
                             </archive>
@@ -234,7 +221,7 @@
             <plugin>
                 <groupId>org.cyclonedx</groupId>
                 <artifactId>cyclonedx-maven-plugin</artifactId>
-                <version>2.7.9</version>
+                <version>2.9.1</version>
                 <configuration>
                     <schemaVersion>1.6</schemaVersion>
                     <outputFormat>all</outputFormat>
@@ -256,8 +243,7 @@
                 </executions>
             </plugin>
 
-            <!-- 11. Exec Maven Plugin: Allows running the Demo directly from Maven.
-                  - default configuration: runs net.perseity.Demo with required JVM exports. -->
+            <!-- 11. Exec Maven Plugin: Allows running the Demo directly from Maven. -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -265,8 +251,6 @@
                 <configuration>
                     <executable>java</executable>
                     <arguments>
-                        <argument>--add-exports</argument>
-                        <argument>java.base/sun.security.x509=ALL-UNNAMED</argument>
                         <argument>-classpath</argument>
                         <classpath/>
                         <argument>net.perseity.Demo</argument>

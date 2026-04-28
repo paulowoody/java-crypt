@@ -13,12 +13,11 @@ import javax.crypto.NoSuchPaddingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for MyCrypt class, verifying symmetric encryption, 
+ * Unit tests for MyCrypt class, verifying symmetric encryption,
  * password-based key derivation, and HMAC signatures.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -96,13 +95,13 @@ class MyCryptTest {
     void testKeyFromPasswordAndSalt() throws Exception {
         String password = "StrongPassword123";
         byte[] salt = myCrypt.generateSalt();
-        
+
         myCrypt.generateKeyFromPassword(password, salt);
         String key1 = myCrypt.getSecretKey();
-        
+
         myCrypt.generateKeyFromPassword(password, salt);
         String key2 = myCrypt.getSecretKey();
-        
+
         assertEquals(key1, key2);
     }
 }

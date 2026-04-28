@@ -2,12 +2,13 @@ package net.perseity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for MyJwt class, verifying JWT creation, 
+ * Unit tests for MyJwt class, verifying JWT creation,
  * signature verification, tampering detection, and expiration handling.
  */
 class MyJwtTest {
@@ -67,19 +68,19 @@ class MyJwtTest {
         // Manual JWT with expired 'exp'
         String header = Helper.b64UrlEncode("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes());
         String payload = Helper.b64UrlEncode("{\"sub\":\"user123\",\"exp\":1516239022}".getBytes()); // Expired in 2018
-        
+
         // We need the signature
         String message = header + "." + payload;
-        
+
         // Access private sign method via tokenProvider if possible or just use secret with HmacSHA256 manually
         // Since MyJwt.sign is private, and we are in same package (net.perseity), we might be able to access it if it was package-private.
         // It is private. Let's just use createToken and then tamper with exp if we can.
         // Or just use the same logic.
-        
+
         javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
         mac.init(new javax.crypto.spec.SecretKeySpec(secret.getBytes(), "HmacSHA256"));
         String signature = Helper.b64UrlEncode(mac.doFinal(message.getBytes()));
-        
+
         String expiredToken = message + "." + signature;
         assertFalse(tokenProvider.verifyToken(expiredToken, secret));
     }
@@ -90,11 +91,11 @@ class MyJwtTest {
         String header = Helper.b64UrlEncode("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes());
         String payload = Helper.b64UrlEncode("{\"sub\":\"user123\"}".getBytes()); // No exp
         String message = header + "." + payload;
-        
+
         javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
         mac.init(new javax.crypto.spec.SecretKeySpec(secret.getBytes(), "HmacSHA256"));
         String signature = Helper.b64UrlEncode(mac.doFinal(message.getBytes()));
-        
+
         String noExpToken = message + "." + signature;
         assertTrue(tokenProvider.verifyToken(noExpToken, secret));
     }

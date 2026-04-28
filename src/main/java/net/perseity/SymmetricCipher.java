@@ -8,7 +8,7 @@ public interface SymmetricCipher {
 
     /**
      * Gets the underlying secret key being used for symmetric operations.
-     * 
+     *
      * @return The underlying secret key encoded as a base64 string.
      * @throws Exception If retrieving the secret key fails.
      */
@@ -16,7 +16,7 @@ public interface SymmetricCipher {
 
     /**
      * Encrypts a plaintext string and returns a base64 encoded ciphertext.
-     * 
+     *
      * @param plaintext The plaintext string to encrypt.
      * @return The base64 encoded ciphertext.
      * @throws Exception If encryption fails due to invalid key, algorithm errors, etc.
@@ -25,7 +25,7 @@ public interface SymmetricCipher {
 
     /**
      * Decrypts a base64 encoded ciphertext and returns the original plaintext.
-     * 
+     *
      * @param ciphertext The base64 encoded ciphertext to decrypt.
      * @return The original decrypted plaintext String.
      * @throws Exception If decryption fails due to invalid key, padding errors, etc.
@@ -34,7 +34,7 @@ public interface SymmetricCipher {
 
     /**
      * Creates a base64 digital signature of the message's SHA-256 hash using the shared secret key (HMAC).
-     * 
+     *
      * @param message The message to sign.
      * @return The digital signature as a base64 encoded String.
      * @throws Exception If signing fails.
@@ -43,8 +43,8 @@ public interface SymmetricCipher {
 
     /**
      * Verifies a base64 digital signature of the message's SHA-256 hash using the shared secret key (HMAC).
-     * 
-     * @param message The original message that was signed.
+     *
+     * @param message   The original message that was signed.
      * @param signature The base64 encoded digital signature to verify.
      * @return true if the signature is valid; false otherwise.
      * @throws Exception If signature verification fails.

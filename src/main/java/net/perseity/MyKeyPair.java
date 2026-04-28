@@ -11,7 +11,6 @@ import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.*;
-import java.util.HexFormat;
 
 /**
  * Handles asymmetric cryptography (Public/Private Key Pairs) using RSA.
@@ -52,18 +51,8 @@ public class MyKeyPair implements AsymmetricCipher {
     private java.security.KeyPair keyPair;
 
     /**
-     * Gets the standard algorithm name used by this key pair.
-     * 
-     * @return The standard algorithm name.
-     */
-    @Override
-    public String getAlgorithm() {
-        return ALGORITHM;
-    }
-
-    /**
      * Generates a brand new, random RSA Public/Private Key Pair.
-     * 
+     *
      * @throws NoSuchAlgorithmException If the RSA algorithm is not available.
      */
     public MyKeyPair() throws NoSuchAlgorithmException {
@@ -76,12 +65,12 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Loads an existing RSA Key Pair from stored Base64 string files.
-     * 
-     * @param publicKeyFile Path to the public key PEM file.
+     *
+     * @param publicKeyFile  Path to the public key PEM file.
      * @param privateKeyFile Path to the private key PEM file.
-     * @throws IOException If reading from the files fails.
+     * @throws IOException              If reading from the files fails.
      * @throws NoSuchAlgorithmException If the RSA algorithm is not available.
-     * @throws InvalidKeySpecException If the key specifications are invalid.
+     * @throws InvalidKeySpecException  If the key specifications are invalid.
      */
     public MyKeyPair(String publicKeyFile, String privateKeyFile) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         this.keyPair = Helper.readKeyPair(publicKeyFile, privateKeyFile, ALGORITHM);
@@ -89,11 +78,11 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Loads only an existing RSA Public Key from a stored Base64 string file.
-     * 
+     *
      * @param publicKeyFile Path to the public key PEM file.
-     * @throws IOException If reading from the file fails.
+     * @throws IOException              If reading from the file fails.
      * @throws NoSuchAlgorithmException If the RSA algorithm is not available.
-     * @throws InvalidKeySpecException If the key specifications are invalid.
+     * @throws InvalidKeySpecException  If the key specifications are invalid.
      */
     public MyKeyPair(String publicKeyFile) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         PublicKey publicKey = Helper.readPublicKey(publicKeyFile, ALGORITHM);
@@ -102,7 +91,7 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Creates a MyKeyPair instance from an existing PublicKey.
-     * 
+     *
      * @param publicKey The PublicKey to use.
      */
     public MyKeyPair(PublicKey publicKey) {
@@ -111,7 +100,7 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Manually sets the internal KeyPair instance.
-     * 
+     *
      * @param keyPair The KeyPair instance to use.
      */
     public MyKeyPair(KeyPair keyPair) {
@@ -119,9 +108,19 @@ public class MyKeyPair implements AsymmetricCipher {
     }
 
     /**
+     * Gets the standard algorithm name used by this key pair.
+     *
+     * @return The standard algorithm name.
+     */
+    @Override
+    public String getAlgorithm() {
+        return ALGORITHM;
+    }
+
+    /**
      * Creates a new instance of MyKeyPair that only contains the public key.
      * This is useful for safely sharing public keys with others without exposing the private key.
-     * 
+     *
      * @return A new MyKeyPair instance containing only the public key.
      */
     public MyKeyPair getPublicOnly() {
@@ -130,7 +129,7 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Manually sets the internal KeyPair instance.
-     * 
+     *
      * @param keyPair The KeyPair instance to set.
      */
     @Override
@@ -141,15 +140,15 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Decrypts a message using this instance's Private Key.
      * Only the owner of the Private Key can read data that was encrypted with their Public Key.
-     * 
+     *
      * @param encrypted The base64 encoded ciphertext to decrypt.
      * @return The decrypted plaintext message as a String.
-     * @throws NoSuchAlgorithmException If the RSA algorithm is not available.
-     * @throws NoSuchPaddingException If the requested padding is not available.
-     * @throws InvalidKeyException If the private key is invalid.
+     * @throws NoSuchAlgorithmException  If the RSA algorithm is not available.
+     * @throws NoSuchPaddingException    If the requested padding is not available.
+     * @throws InvalidKeyException       If the private key is invalid.
      * @throws IllegalBlockSizeException If the block size is invalid.
-     * @throws BadPaddingException If the padding is incorrect.
-     * @throws IllegalStateException If the private key is missing (e.g., this is a public-key-only instance).
+     * @throws BadPaddingException       If the padding is incorrect.
+     * @throws IllegalStateException     If the private key is missing (e.g., this is a public-key-only instance).
      */
     @Override
     public String decrypt(String encrypted) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
@@ -167,14 +166,14 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Encrypts a message using this instance's Public Key.
      * Anyone can use the Public Key to encrypt a message, but only the Private Key owner can decrypt it.
-     * 
+     *
      * @param message The plaintext message to encrypt.
      * @return The encrypted ciphertext as a base64 encoded String.
-     * @throws NoSuchAlgorithmException If the RSA algorithm is not available.
-     * @throws NoSuchPaddingException If the requested padding is not available.
-     * @throws InvalidKeyException If the public key is invalid.
+     * @throws NoSuchAlgorithmException  If the RSA algorithm is not available.
+     * @throws NoSuchPaddingException    If the requested padding is not available.
+     * @throws InvalidKeyException       If the public key is invalid.
      * @throws IllegalBlockSizeException If the block size is invalid.
-     * @throws BadPaddingException If padding fails.
+     * @throws BadPaddingException       If padding fails.
      */
     @Override
     public String encrypt(String message) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
@@ -192,13 +191,13 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Verifies a digital signature using this instance's Public Key.
      * This proves that the message was signed by the owner of the corresponding Private Key and hasn't been altered.
-     * 
-     * @param message The original message that was signed.
+     *
+     * @param message   The original message that was signed.
      * @param signature The base64 encoded digital signature to verify.
      * @return true if the signature is valid; false otherwise.
-     * @throws NoSuchAlgorithmException If the signature or hash algorithm is not available.
-     * @throws InvalidKeyException If the public key is invalid.
-     * @throws SignatureException If signature verification fails.
+     * @throws NoSuchAlgorithmException           If the signature or hash algorithm is not available.
+     * @throws InvalidKeyException                If the public key is invalid.
+     * @throws SignatureException                 If signature verification fails.
      * @throws InvalidAlgorithmParameterException If the PSS parameters are invalid.
      */
     @Override
@@ -222,14 +221,14 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Creates a digital signature for a message using this instance's Private Key.
      * A signature proves authenticity (who sent it) and integrity (it wasn't tampered with).
-     * 
+     *
      * @param message The message to sign.
      * @return The digital signature as a base64 encoded String.
-     * @throws NoSuchAlgorithmException If the signature or hash algorithm is not available.
-     * @throws InvalidKeyException If the private key is invalid.
-     * @throws SignatureException If signing fails.
+     * @throws NoSuchAlgorithmException           If the signature or hash algorithm is not available.
+     * @throws InvalidKeyException                If the private key is invalid.
+     * @throws SignatureException                 If signing fails.
      * @throws InvalidAlgorithmParameterException If the PSS parameters are invalid.
-     * @throws IllegalStateException If the private key is missing (e.g., this is a public-key-only instance).
+     * @throws IllegalStateException              If the private key is missing (e.g., this is a public-key-only instance).
      */
     @Override
     public String sign(String message) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, InvalidAlgorithmParameterException {
@@ -250,7 +249,7 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Returns the underlying Java PrivateKey object.
-     * 
+     *
      * @return The private key from the internal KeyPair, or null if it's missing.
      */
     @Override
@@ -260,7 +259,7 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Returns the underlying Java PublicKey object.
-     * 
+     *
      * @return The public key from the internal KeyPair, or null if it's missing.
      */
     @Override
@@ -272,7 +271,7 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Generates a short, unique identifier (fingerprint) for the Public Key.
      * Useful for comparing keys or displaying them in logs without printing the massive raw key string.
-     * 
+     *
      * @return A hexadecimal string representing the Public Key's ID.
      * @throws NoSuchAlgorithmException If the hash algorithm for calculation is not available.
      */
@@ -288,7 +287,7 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Generates a short, unique identifier (fingerprint) for the Private Key.
-     * 
+     *
      * @return A hexadecimal string representing the Private Key's ID, or "N/A" if missing.
      * @throws NoSuchAlgorithmException If the hash algorithm for calculation is not available.
      */
@@ -304,7 +303,7 @@ public class MyKeyPair implements AsymmetricCipher {
 
     /**
      * Extracts the mathematical properties (modulus and exponent) that make up an RSA key.
-     * 
+     *
      * @param key The RSA key (Public or Private) to extract specs from.
      * @return The KeySpec object for the given key.
      * @throws IllegalArgumentException If the key type is not supported.
@@ -322,7 +321,7 @@ public class MyKeyPair implements AsymmetricCipher {
     /**
      * Calculates the Key ID by combining the mathematical properties of the key,
      * hashing them with SHA-256, and taking the first 8 bytes.
-     * 
+     *
      * @param keySpec The specification of the RSA key.
      * @return A hexadecimal fingerprint String.
      * @throws NoSuchAlgorithmException If the hash algorithm is not available.

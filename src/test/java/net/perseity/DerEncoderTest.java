@@ -79,12 +79,12 @@ class DerEncoderTest {
         // 1   = 0x01
         byte[] encoded = DerEncoder.encodeOid("2.16.840.1.101.3.4.2.1");
         byte[] expected = {
-            0x06, 0x09,
-            0x60,                   // 2.16
-            (byte) 0x86, 0x48,      // 840
-            0x01,                   // 1
-            0x65,                   // 101
-            0x03, 0x04, 0x02, 0x01  // 3.4.2.1
+                0x06, 0x09,
+                0x60,                   // 2.16
+                (byte) 0x86, 0x48,      // 840
+                0x01,                   // 1
+                0x65,                   // 101
+                0x03, 0x04, 0x02, 0x01  // 3.4.2.1
         };
         assertArrayEquals(expected, encoded);
     }
@@ -101,11 +101,11 @@ class DerEncoderTest {
         // 10:     0x0A
         byte[] encoded = DerEncoder.encodeOid("1.2.840.113549.1.1.10");
         byte[] expected = {
-            0x06, 0x09,
-            0x2A,                               // 1.2
-            (byte) 0x86, 0x48,                  // 840
-            (byte) 0x86, (byte) 0xF7, 0x0D,     // 113549
-            0x01, 0x01, 0x0A                    // 1.1.10
+                0x06, 0x09,
+                0x2A,                               // 1.2
+                (byte) 0x86, 0x48,                  // 840
+                (byte) 0x86, (byte) 0xF7, 0x0D,     // 113549
+                0x01, 0x01, 0x0A                    // 1.1.10
         };
         assertArrayEquals(expected, encoded);
     }
@@ -182,7 +182,7 @@ class DerEncoderTest {
 
         assertEquals(0x30, encoded[0] & 0xFF);     // SEQUENCE tag
         assertEquals(0x81, encoded[1] & 0xFF);     // long-form: 1 length byte follows
-        assertEquals(200,  encoded[2] & 0xFF);     // length = 200
+        assertEquals(200, encoded[2] & 0xFF);     // length = 200
         assertEquals(3 + 200, encoded.length);     // tag + 2-byte length + 200 content bytes
     }
 

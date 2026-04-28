@@ -1,16 +1,16 @@
 package net.perseity;
 
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.util.ByteArrayDataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import jakarta.mail.internet.MimeMultipart;
-import jakarta.mail.util.ByteArrayDataSource;
 import java.io.ByteArrayOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for MySecureEmail class, verifying the full 
+ * Unit tests for MySecureEmail class, verifying the full
  * sign-and-encrypt / decrypt-and-verify flow for secure messaging.
  */
 class MySecureEmailTest {
@@ -61,7 +61,7 @@ class MySecureEmailTest {
     @Test
     void testEveForges() throws Exception {
         String forgedMessage = "Transfer the money to me.";
-        
+
         // Eve encrypts it for Bob, but signs it with her own key (claiming to be Alice)
         MimeMultipart secureEmail = emailTransport.signAndEncrypt(forgedMessage, attackerKeyPair, recipientKeyPair);
 

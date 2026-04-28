@@ -22,16 +22,15 @@ import java.security.spec.InvalidKeySpecException;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for MyKeyPair class, verifying RSA encryption, 
+ * Unit tests for MyKeyPair class, verifying RSA encryption,
  * signature generation/verification, and public-only key handling.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MyKeyPairTest {
     private static final Logger logger = LogManager.getLogger(MyKeyPairTest.class);
-    private static MyKeyPair myKey;
-
     @TempDir
     static Path tempDir;
+    private static MyKeyPair myKey;
 
     @BeforeAll
     public void setup() throws NoSuchAlgorithmException, IOException, InvalidKeySpecException {
@@ -112,7 +111,7 @@ class MyKeyPairTest {
     @Test
     void testPublicOnlyInstance() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, SignatureException {
         MyKeyPair publicOnly = myKey.getPublicOnly();
-        
+
         assertNotNull(publicOnly.getPublicKey());
         assertNull(publicOnly.getPrivateKey());
         assertEquals("N/A", publicOnly.getPrivateKeyId());
@@ -163,12 +162,12 @@ class MyKeyPairTest {
     void testNullKeyScenarios() throws NoSuchAlgorithmException {
         MyKeyPair empty = new MyKeyPair();
         empty.setKeyPair(null);
-        
+
         assertNull(empty.getPublicKey());
         assertNull(empty.getPrivateKey());
         assertEquals("N/A", empty.getPublicKeyId());
         assertEquals("N/A", empty.getPrivateKeyId());
-        
+
         assertThrows(IllegalStateException.class, () -> empty.encrypt("test"));
         assertThrows(IllegalStateException.class, () -> empty.isSignatureValid("msg", "sig"));
     }

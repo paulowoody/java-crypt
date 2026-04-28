@@ -1,13 +1,13 @@
 package net.perseity;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import jakarta.activation.CommandMap;
 import jakarta.activation.MailcapCommandMap;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMultipart;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,7 +20,7 @@ import java.security.spec.InvalidKeySpecException;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for Helper utility class, verifying Base64 encoding, 
+ * Unit tests for Helper utility class, verifying Base64 encoding,
  * PEM file operations, and MIME/Mailcap configuration.
  */
 class HelperTest {
@@ -36,12 +36,12 @@ class HelperTest {
     void tearDown() throws IOException {
         try (java.util.stream.Stream<Path> pathStream = Files.walk(tempDir)) {
             pathStream.sorted(java.util.Comparator.reverseOrder())
-                      .map(Path::toFile)
-                      .forEach(file -> {
-                          if (!file.delete()) {
-                              file.deleteOnExit();
-                          }
-                      });
+                    .map(Path::toFile)
+                    .forEach(file -> {
+                        if (!file.delete()) {
+                            file.deleteOnExit();
+                        }
+                    });
         }
     }
 
@@ -61,8 +61,8 @@ class HelperTest {
     @Test
     void testUrlSafeBase64() {
         // A byte array that produces + and / in standard base64: { (byte)255, (byte)239, (byte)254 } => "/+/+" standard, expects padding.
-        byte[] originalBytes = { (byte) 255, (byte) 239, (byte) 254 };
-        
+        byte[] originalBytes = {(byte) 255, (byte) 239, (byte) 254};
+
         String urlEncoded = Helper.b64UrlEncode(originalBytes);
 
         // URL safe should not have these chars
@@ -98,7 +98,7 @@ class HelperTest {
         assertEquals(originalCert.getCertificate(), loadedCert);
         assertArrayEquals(originalKeyPair.getPublicKey().getEncoded(), loadedKeyPair.getPublic().getEncoded());
         assertArrayEquals(originalKeyPair.getPrivateKey().getEncoded(), loadedKeyPair.getPrivate().getEncoded());
-        
+
         // Test loadKeyPair method that mutates an existing instance
         MyKeyPair targetKeyPair = new MyKeyPair();
         Helper.loadKeyPair(targetKeyPair, pubKeyFile.toString(), privKeyFile.toString());
@@ -147,8 +147,8 @@ class HelperTest {
     @Test
     void testLoadKeyPairFileNotFound() throws NoSuchAlgorithmException, InvalidKeySpecException {
         MyKeyPair targetKeyPair = new MyKeyPair();
-        assertThrows(IOException.class, () -> 
-            Helper.loadKeyPair(targetKeyPair, "non-existent.pub", "non-existent.key")
+        assertThrows(IOException.class, () ->
+                Helper.loadKeyPair(targetKeyPair, "non-existent.pub", "non-existent.key")
         );
     }
 
@@ -166,7 +166,7 @@ class HelperTest {
 
         MimeMultipart loadedMultipart = Helper.loadMimeMultipart(emlFile.toString());
         assertEquals(1, loadedMultipart.getCount());
-        
+
         MimeBodyPart loadedPart = (MimeBodyPart) loadedMultipart.getBodyPart(0);
         String loadedText;
         try (java.io.InputStream is = loadedPart.getInputStream()) {
@@ -180,17 +180,17 @@ class HelperTest {
         Helper.setupMailcap();
         CommandMap defaultMap = CommandMap.getDefaultCommandMap();
         assertInstanceOf(MailcapCommandMap.class, defaultMap);
-        
+
         MailcapCommandMap mailcapMap = (MailcapCommandMap) defaultMap;
         String[] mimetypes = mailcapMap.getMimeTypes();
-        
+
         boolean hasTextPlain = false;
         boolean hasMultipart = false;
         for (String type : mimetypes) {
             if ("text/plain".equals(type)) hasTextPlain = true;
             if ("multipart/*".equals(type)) hasMultipart = true;
         }
-        
+
         assertTrue(hasTextPlain);
         assertTrue(hasMultipart);
     }

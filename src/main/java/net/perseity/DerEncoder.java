@@ -33,26 +33,36 @@ class DerEncoder {
     // ASN.1 universal tag constants (X.690 Table 1)
     // -------------------------------------------------------------------------
 
-    /** INTEGER (primitive, universal 2) */
-    private static final int TAG_INTEGER    = 0x02;
+    /**
+     * INTEGER (primitive, universal 2)
+     */
+    private static final int TAG_INTEGER = 0x02;
 
-    /** BIT STRING (primitive, universal 3) */
+    /**
+     * BIT STRING (primitive, universal 3)
+     */
     private static final int TAG_BIT_STRING = 0x03;
 
-    /** NULL (primitive, universal 5) */
-    private static final int TAG_NULL       = 0x05;
+    /**
+     * NULL (primitive, universal 5)
+     */
+    private static final int TAG_NULL = 0x05;
 
-    /** OBJECT IDENTIFIER (primitive, universal 6) */
-    private static final int TAG_OID        = 0x06;
+    /**
+     * OBJECT IDENTIFIER (primitive, universal 6)
+     */
+    private static final int TAG_OID = 0x06;
 
-    /** UTCTime (primitive, universal 23) */
-    private static final int TAG_UTC_TIME   = 0x17;
+    /**
+     * UTCTime (primitive, universal 23)
+     */
+    private static final int TAG_UTC_TIME = 0x17;
 
     /**
      * SEQUENCE (constructed, universal 16).
      * The 0x30 byte is 0x20 (constructed bit) | 0x10 (universal tag 16).
      */
-    private static final int TAG_SEQUENCE   = 0x30;
+    private static final int TAG_SEQUENCE = 0x30;
 
     /**
      * Base tag byte for context-specific constructed types ({@code [n] EXPLICIT}).
@@ -61,8 +71,11 @@ class DerEncoder {
      */
     private static final int TAG_CONTEXT_CONSTRUCTED = 0xA0;
 
-    /** Prevent instantiation — all methods are static. */
-    private DerEncoder() {}
+    /**
+     * Prevent instantiation — all methods are static.
+     */
+    private DerEncoder() {
+    }
 
     // =========================================================================
     // Public encoding methods

@@ -1,22 +1,24 @@
 package net.perseity;
 
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMultipart;
+
 import java.nio.charset.StandardCharsets;
 
 /**
  * Demonstrates how to create a secure (signed and encrypted) email using ONLY
- * standard Java cryptography (RSA and AES-GCM). 
+ * standard Java cryptography (RSA and AES-GCM).
  * This class implements the {@link SecureMessageTransport} interface.
- * 
- * Note on S/MIME Compliance: 
- * This class mimics the exact cryptographic concepts of S/MIME (Authenticity, 
- * Integrity, Confidentiality) but is NOT technically S/MIME compliant. 
- * True S/MIME requires wrapping the payloads in a complex standard called 
- * CMS (Cryptographic Message Syntax, or PKCS#7). The standard Java Library 
- * (sun.security) does not have internal classes for generating CMS EnvelopedData 
- * (Encrypted payloads). To create a fully compliant S/MIME email that standard 
- * clients (like Outlook or Apple Mail) can natively read, a heavy third-party 
+ * <p>
+ * Note on S/MIME Compliance:
+ * This class mimics the exact cryptographic concepts of S/MIME (Authenticity,
+ * Integrity, Confidentiality) but is NOT technically S/MIME compliant.
+ * True S/MIME requires wrapping the payloads in a complex standard called
+ * CMS (Cryptographic Message Syntax, or PKCS#7). The standard Java Library
+ * (sun.security) does not have internal classes for generating CMS EnvelopedData
+ * (Encrypted payloads). To create a fully compliant S/MIME email that standard
+ * clients (like Outlook or Apple Mail) can natively read, a heavy third-party
  * CMS library like BouncyCastle is required.
  */
 public class MySecureEmail implements SecureMessageTransport {
@@ -28,13 +30,31 @@ public class MySecureEmail implements SecureMessageTransport {
         // No-arg constructor
     }
 
+    private static MimeMultipart getMimeMultipart(String encryptedSessionSecret, String encryptedPayload) throws MessagingException {
+        MimeMultipart multipart = new MimeMultipart();
+
+        MimeBodyPart keyPart = new MimeBodyPart();
+        keyPart.setText(encryptedSessionSecret);
+        keyPart.setHeader("Content-Type", "application/x-encrypted-key");
+        keyPart.setHeader("Content-Description", "Encrypted AES Key");
+
+        MimeBodyPart payloadPart = new MimeBodyPart();
+        payloadPart.setText(encryptedPayload);
+        payloadPart.setHeader("Content-Type", "application/x-encrypted-payload");
+        payloadPart.setHeader("Content-Description", "Encrypted Signed Payload");
+
+        multipart.addBodyPart(keyPart);
+        multipart.addBodyPart(payloadPart);
+        return multipart;
+    }
+
     /**
-     * Signs the email body with the sender's private key, and encrypts it with 
+     * Signs the email body with the sender's private key, and encrypts it with
      * a temporary AES key which is then encrypted for the recipient.
      *
-     * @param messageBody       The plaintext message.
-     * @param senderKeyPair     The sender's RSA Key Pair (used to sign).
-     * @param recipientKeyPair  The recipient's RSA Key Pair (used to encrypt the session key).
+     * @param messageBody      The plaintext message.
+     * @param senderKeyPair    The sender's RSA Key Pair (used to sign).
+     * @param recipientKeyPair The recipient's RSA Key Pair (used to encrypt the session key).
      * @return A MimeMultipart containing the encrypted session key and the encrypted payload.
      * @throws Exception If signing, encryption, or MIME part creation fails.
      */
@@ -53,30 +73,15 @@ public class MySecureEmail implements SecureMessageTransport {
         String encryptedSessionSecret = recipientKeyPair.encrypt(sessionSecret);
 
         // 4. Construct the custom MIME part to hold both pieces
-        MimeMultipart multipart = new MimeMultipart();
-
-        MimeBodyPart keyPart = new MimeBodyPart();
-        keyPart.setText(encryptedSessionSecret);
-        keyPart.setHeader("Content-Type", "application/x-encrypted-key");
-        keyPart.setHeader("Content-Description", "Encrypted AES Key");
-
-        MimeBodyPart payloadPart = new MimeBodyPart();
-        payloadPart.setText(encryptedPayload);
-        payloadPart.setHeader("Content-Type", "application/x-encrypted-payload");
-        payloadPart.setHeader("Content-Description", "Encrypted Signed Payload");
-
-        multipart.addBodyPart(keyPart);
-        multipart.addBodyPart(payloadPart);
-
-        return multipart;
+        return getMimeMultipart(encryptedSessionSecret, encryptedPayload);
     }
 
     /**
      * Decrypts the secure email body and verifies the sender's signature.
      *
-     * @param encryptedEmail    The MimeMultipart containing the encrypted data.
-     * @param recipientKeyPair  The recipient's RSA Key Pair (used to decrypt the session key).
-     * @param senderKeyPair     The sender's RSA Key Pair (used to verify the signature).
+     * @param encryptedEmail   The MimeMultipart containing the encrypted data.
+     * @param recipientKeyPair The recipient's RSA Key Pair (used to decrypt the session key).
+     * @param senderKeyPair    The sender's RSA Key Pair (used to verify the signature).
      * @return A DecryptedEmail object containing the decrypted message and its signature verification status.
      * @throws Exception If decryption, signature verification, or MIME parsing fails.
      */
@@ -89,7 +94,7 @@ public class MySecureEmail implements SecureMessageTransport {
         try (java.io.InputStream is = keyPart.getInputStream()) {
             encryptedSessionSecret = new String(is.readAllBytes(), StandardCharsets.UTF_8).trim();
         }
-        
+
         String encryptedPayload;
         try (java.io.InputStream is = payloadPart.getInputStream()) {
             encryptedPayload = new String(is.readAllBytes(), StandardCharsets.UTF_8).trim();

@@ -95,9 +95,7 @@
                 </configuration>
             </plugin>
 
-            <!-- 2. Maven Compiler Plugin: Accesses internal sun.security APIs.
-                 Uses maven.compiler.source/target properties (not 'release') to allow
-                 access to internal JVM APIs (sun.security.x509). -->
+            <!-- 2. Maven Compiler Plugin: Configures the Java compiler. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -107,19 +105,15 @@
                         <arg>-proc:none</arg>
                         <arg>-Xlint:all</arg>
                         <arg>-Xlint:-options</arg>
-                        <arg>--add-exports=java.base/sun.security.x509=ALL-UNNAMED</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
 
-            <!-- 3. Maven Surefire Plugin: Runs tests with necessary JVM exports. -->
+            <!-- 3. Maven Surefire Plugin: Runs tests. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
-                <configuration>
-                    <argLine>--add-exports java.base/sun.security.x509=ALL-UNNAMED</argLine>
-                </configuration>
             </plugin>
 
             <!-- 4. Maven Assembly Plugin: Bundles the sample into a standalone JAR. -->
@@ -142,7 +136,6 @@
                                     <mainClass>net.example.ReproDemo</mainClass>
                                 </manifest>
                                 <manifestEntries>
-                                    <Add-Exports>java.base/sun.security.x509</Add-Exports>
                                     <Multi-Release>true</Multi-Release>
                                 </manifestEntries>
                             </archive>
@@ -154,8 +147,7 @@
                 </executions>
             </plugin>
 
-            <!-- 5. Exec Maven Plugin: Allows 'mvn compile exec:exec' to run the demo.
-                 Includes the mandatory JVM export for X.509 certificate generation. -->
+            <!-- 5. Exec Maven Plugin: Allows 'mvn compile exec:exec' to run the demo. -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -163,8 +155,6 @@
                 <configuration>
                     <executable>java</executable>
                     <arguments>
-                        <argument>--add-exports</argument>
-                        <argument>java.base/sun.security.x509=ALL-UNNAMED</argument>
                         <argument>-classpath</argument>
                         <classpath/>
                         <argument>net.example.ReproDemo</argument>

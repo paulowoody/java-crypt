@@ -1,5 +1,11 @@
 package net.perseity;
 
+import jakarta.activation.CommandMap;
+import jakarta.activation.MailcapCommandMap;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.util.ByteArrayDataSource;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -11,12 +17,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
-
-import jakarta.activation.CommandMap;
-import jakarta.activation.MailcapCommandMap;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
-import jakarta.mail.util.ByteArrayDataSource;
 
 /**
  * Utility class providing common Base64 encoding/decoding and PEM file operations.
@@ -42,7 +42,7 @@ public class Helper {
 
     /**
      * Standard Base64 Encoding (RFC 4648). Used primarily for standard cryptography payloads.
-     * 
+     *
      * @param byteArray The byte array to encode.
      * @return The base64 encoded String.
      */
@@ -53,7 +53,7 @@ public class Helper {
 
     /**
      * Standard Base64 Decoding.
-     * 
+     *
      * @param string The base64 encoded String to decode.
      * @return The decoded byte array.
      */
@@ -63,9 +63,9 @@ public class Helper {
     }
 
     /**
-     * URL-Safe Base64 Encoding without padding (RFC 4648 Sec 5). 
+     * URL-Safe Base64 Encoding without padding (RFC 4648 Sec 5).
      * Required for JWTs so tokens can be passed safely in URLs without breaking.
-     * 
+     *
      * @param byteArray The byte array to encode.
      * @return The URL-safe base64 encoded String.
      */
@@ -76,7 +76,7 @@ public class Helper {
 
     /**
      * URL-Safe Base64 Decoding.
-     * 
+     *
      * @param string The URL-safe base64 encoded String to decode.
      * @return The decoded byte array.
      */
@@ -87,10 +87,10 @@ public class Helper {
 
     /**
      * Reads an X.509 Certificate from a PEM file.
-     * 
+     *
      * @param certFile The path to the PEM file containing the certificate.
      * @return The loaded X509Certificate object.
-     * @throws IOException If reading from the file fails.
+     * @throws IOException                             If reading from the file fails.
      * @throws java.security.cert.CertificateException If the certificate cannot be parsed.
      */
     public static java.security.cert.X509Certificate readCert(String certFile) throws IOException, java.security.cert.CertificateException {
@@ -102,10 +102,10 @@ public class Helper {
 
     /**
      * Saves an X.509 Certificate to a PEM file.
-     * 
-     * @param cert The X509Certificate to save.
+     *
+     * @param cert     The X509Certificate to save.
      * @param filename The path where the certificate should be saved.
-     * @throws IOException If writing to the file fails.
+     * @throws IOException                                     If writing to the file fails.
      * @throws java.security.cert.CertificateEncodingException If encoding the certificate fails.
      */
     public static void saveCert(java.security.cert.X509Certificate cert, String filename) throws IOException, java.security.cert.CertificateEncodingException {
@@ -113,10 +113,10 @@ public class Helper {
     }
 
     /**
-     * Serializes a single cryptographic Key into PEM (Privacy-Enhanced Mail) format 
+     * Serializes a single cryptographic Key into PEM (Privacy-Enhanced Mail) format
      * and writes it to a file. PEM format wraps Base64-encoded data in explicit header and footer lines.
-     * 
-     * @param key The Key to save.
+     *
+     * @param key      The Key to save.
      * @param filename The path where the key should be saved.
      * @throws IOException If writing to the file fails.
      */
@@ -126,11 +126,11 @@ public class Helper {
 
     /**
      * Shared utility to write Base64 encoded data with PEM headers and footers to a file.
-     * 
+     *
      * @param filename The path where the file should be written.
-     * @param header The PEM header line.
-     * @param footer The PEM footer line.
-     * @param data The raw byte data to be encoded and wrapped.
+     * @param header   The PEM header line.
+     * @param footer   The PEM footer line.
+     * @param data     The raw byte data to be encoded and wrapped.
      * @throws IOException If writing to the file fails.
      */
     private static void writePem(String filename, String header, String footer, byte[] data) throws IOException {
@@ -148,13 +148,13 @@ public class Helper {
 
     /**
      * Reads a Public key from disk.
-     * 
+     *
      * @param publicKeyFile Path to the public key PEM file.
-     * @param algorithm The name of the algorithm (e.g. "RSA").
+     * @param algorithm     The name of the algorithm (e.g. "RSA").
      * @return A PublicKey object loaded from the file.
-     * @throws IOException If reading from the file fails.
+     * @throws IOException              If reading from the file fails.
      * @throws NoSuchAlgorithmException If the specified algorithm is not supported.
-     * @throws InvalidKeySpecException If the key specifications are invalid.
+     * @throws InvalidKeySpecException  If the key specifications are invalid.
      */
     public static PublicKey readPublicKey(String publicKeyFile, String algorithm) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         String publicKeyString = loadKey(publicKeyFile);
@@ -165,14 +165,14 @@ public class Helper {
 
     /**
      * Reads a matching Public and Private key from disk.
-     * 
-     * @param publicKeyFile Path to the public key PEM file.
+     *
+     * @param publicKeyFile  Path to the public key PEM file.
      * @param privateKeyFile Path to the private key PEM file.
-     * @param algorithm The name of the algorithm (e.g. "RSA").
+     * @param algorithm      The name of the algorithm (e.g. "RSA").
      * @return A KeyPair object containing both the loaded public and private keys.
-     * @throws IOException If reading from either file fails.
+     * @throws IOException              If reading from either file fails.
      * @throws NoSuchAlgorithmException If the specified algorithm is not supported.
-     * @throws InvalidKeySpecException If the key specifications are invalid.
+     * @throws InvalidKeySpecException  If the key specifications are invalid.
      */
     public static KeyPair readKeyPair(String publicKeyFile, String privateKeyFile, String algorithm) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         PublicKey publicKey = readPublicKey(publicKeyFile, algorithm);
@@ -186,12 +186,12 @@ public class Helper {
 
     /**
      * Helper method to populate an existing AsymmetricCipher instance with a public key loaded from disk.
-     * 
-     * @param cipher The AsymmetricCipher instance to load the key into.
+     *
+     * @param cipher        The AsymmetricCipher instance to load the key into.
      * @param publicKeyFile Path to the public key PEM file.
-     * @throws IOException If reading from the file fails.
+     * @throws IOException              If reading from the file fails.
      * @throws NoSuchAlgorithmException If the algorithm used by the cipher is not supported.
-     * @throws InvalidKeySpecException If the key specifications are invalid.
+     * @throws InvalidKeySpecException  If the key specifications are invalid.
      */
     public static void loadPublicKey(AsymmetricCipher cipher, String publicKeyFile) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         PublicKey publicKey = readPublicKey(publicKeyFile, cipher.getAlgorithm());
@@ -200,13 +200,13 @@ public class Helper {
 
     /**
      * Helper method to populate an existing AsymmetricCipher instance with keys loaded from disk.
-     * 
-     * @param cipher The AsymmetricCipher instance to load keys into.
-     * @param publicKeyFile Path to the public key PEM file.
+     *
+     * @param cipher         The AsymmetricCipher instance to load keys into.
+     * @param publicKeyFile  Path to the public key PEM file.
      * @param privateKeyFile Path to the private key PEM file.
-     * @throws IOException If reading from either file fails.
+     * @throws IOException              If reading from either file fails.
      * @throws NoSuchAlgorithmException If the algorithm used by the cipher is not supported.
-     * @throws InvalidKeySpecException If the key specifications are invalid.
+     * @throws InvalidKeySpecException  If the key specifications are invalid.
      */
     public static void loadKeyPair(AsymmetricCipher cipher, String publicKeyFile, String privateKeyFile) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         cipher.setKeyPair(readKeyPair(publicKeyFile, privateKeyFile, cipher.getAlgorithm()));
@@ -214,9 +214,9 @@ public class Helper {
 
     /**
      * Saves an AsymmetricCipher's public and private keys to separate PEM files on disk.
-     * 
-     * @param cipher The AsymmetricCipher instance whose keys should be saved.
-     * @param publicKeyFile Path where the public key should be saved.
+     *
+     * @param cipher         The AsymmetricCipher instance whose keys should be saved.
+     * @param publicKeyFile  Path where the public key should be saved.
      * @param privateKeyFile Path where the private key should be saved.
      * @throws IOException If writing to either file fails.
      */
@@ -231,7 +231,7 @@ public class Helper {
 
     /**
      * Determines the appropriate PEM header based on whether the key is Public or Private.
-     * 
+     *
      * @param key The Key to check.
      * @return The corresponding PEM header String.
      */
@@ -241,7 +241,7 @@ public class Helper {
 
     /**
      * Determines the appropriate PEM footer based on whether the key is Public or Private.
-     * 
+     *
      * @param key The Key to check.
      * @return The corresponding PEM footer String.
      */
@@ -252,14 +252,14 @@ public class Helper {
     /**
      * Strips the PEM headers, footers, and whitespace/newlines from a file's content
      * to isolate the raw Base64 payload.
-     * 
+     *
      * @param pemContent The full content of a PEM file.
      * @return The isolated Base64 encoded payload.
      */
     private static String extractBase64Content(String pemContent) {
         // Remove headers and footers using regex
         String base64Content = pemContent.replaceAll("-----BEGIN.*?-----", "")
-                                         .replaceAll("-----END.*?-----", "");
+                .replaceAll("-----END.*?-----", "");
 
         // Normalize line endings and remove leading and trailing whitespace
         return base64Content.replace("\r\n", "").replace("\n", "").trim();
@@ -267,7 +267,7 @@ public class Helper {
 
     /**
      * Reads a PEM file from disk and returns the inner Base64-encoded key string.
-     * 
+     *
      * @param filePath The path to the PEM file.
      * @return The Base64 encoded content of the key.
      * @throws IOException If reading from the file fails.
@@ -280,10 +280,10 @@ public class Helper {
 
     /**
      * Saves a MimeMultipart to a file on disk.
-     * 
+     *
      * @param multipart The MimeMultipart content to save.
-     * @param filename The path where the content should be saved.
-     * @throws IOException If writing to the file fails.
+     * @param filename  The path where the content should be saved.
+     * @throws IOException        If writing to the file fails.
      * @throws MessagingException If a messaging error occurs while writing the multipart.
      */
     public static void saveMimeMultipart(MimeMultipart multipart, String filename) throws IOException, MessagingException {
@@ -294,10 +294,10 @@ public class Helper {
 
     /**
      * Loads a MimeMultipart from a file on disk.
-     * 
+     *
      * @param filename The path to the file to load.
      * @return The loaded MimeMultipart object.
-     * @throws IOException If reading from the file fails.
+     * @throws IOException        If reading from the file fails.
      * @throws MessagingException If a messaging error occurs while parsing the multipart.
      */
     public static MimeMultipart loadMimeMultipart(String filename) throws IOException, MessagingException {
@@ -319,7 +319,7 @@ public class Helper {
 
     /**
      * Helper method to concatenate two byte arrays.
-     * 
+     *
      * @param a The first byte array.
      * @param b The second byte array.
      * @return The combined byte array.
@@ -333,7 +333,7 @@ public class Helper {
 
     /**
      * Computes a SHA-256 hash of the given message.
-     * 
+     *
      * @param message The message to hash.
      * @return The SHA-256 hash as a byte array.
      * @throws NoSuchAlgorithmException If the SHA-256 algorithm is not available.
@@ -345,7 +345,7 @@ public class Helper {
 
     /**
      * Converts a byte array into a colon-separated hexadecimal string format (e.g., "1A:2B:3C").
-     * 
+     *
      * @param bytes The byte array to convert.
      * @return The formatted hexadecimal String.
      */

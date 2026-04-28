@@ -73,8 +73,7 @@ The main demonstration (`net.perseity.Demo`) performs the following steps to sim
 - `MyKeyPair`: Implements `AsymmetricCipher` to handle asymmetric cryptography using RSA. Used for key exchange and digital signatures.
 - `MyCrypt`: Implements `SymmetricCipher` to handle symmetric encryption/decryption using AES-GCM. Used for encrypting actual message data securely and fast.
 - `MyJwt`: Implements `TokenProvider` to handle the creation and verification of JSON Web Tokens using HMAC SHA-256 signatures.
-- `MyTLSCert`: Handles the creation, signing, and verification of TLS (X.509) Certificates using internal `sun.security.x509` APIs.
-  - *Note: Because standard Java lacks a public API for certificate generation, this project intentionally uses internal JVM classes to avoid external dependencies. The `pom.xml` configures compiler arguments and jar manifest entries (`Add-Exports: java.base/sun.security.x509`) to bypass the Java Module System restrictions.*
+- `MyTLSCert`: Handles the creation, signing, and verification of TLS (X.509) Certificates using standard `java.security.*` APIs and a hand-rolled ASN.1/DER encoder. Supports RSA-PSS (with full PSS parameters), RSA, and ECDSA key types. No internal JVM APIs required.
 - `MySecureEmail`: Implements `SecureMessageTransport` to demonstrate secure email concepts (signing, encrypting, decrypting, verifying) using standard Java cryptography instead of heavy third-party S/MIME libraries.
 - `Helper`: Provides common Base64 (Standard and URL-Safe) encoding/decoding and PEM file operations for Keys and Certificates.
 
@@ -116,10 +115,7 @@ The `java-crypt` library is deployed to a public Cloudsmith repository. To use i
 Ensure you have Java 21 and Maven 3 installed.
 
 ### Compiler Configuration
-This project uses internal JVM APIs (`sun.security.x509`) for certificate generation to avoid external dependencies. As a result, the `pom.xml` is configured with:
-- `maven.compiler.source=21` and `maven.compiler.target=21` set via `<properties>` instead of the `release` flag, as `release` strictly enforces public API boundaries and would block access to internal classes.
-- `-Xlint:-options` to suppress the compiler warning about not setting the system module location when using source/target without release.
-- `--add-exports` to allow the compiler and runtime to access the necessary internal packages.
+This project uses only public `java.security.*` APIs — no internal JVM classes. The `pom.xml` uses `maven.compiler.source=21` and `maven.compiler.target=21` with `-Xlint:all` for strict compilation.
 
 To compile, run the unit tests, and package the application, run:
 ```bash
@@ -320,7 +316,7 @@ expand it with more real-world examples, we could consider the following:
     - 2026-03-10, Added Secure Email functions with pure standard library `MySecureEmail` implementation.
     - 2026-03-10, Added Hacker/Eve interception and forgery scenarios to both the TLS and Secure Email examples.
     - 2026-03-10, Updated `Demo.java` to output secure email payloads as `.eml` files to disk for inspection.
-    - 2026-03-09, Added TLS/X.509 self-signed certificate generation using native Java libraries (`sun.security.x509`).
+    - 2026-03-09, Added TLS/X.509 self-signed certificate generation using standard Java libraries.
     - 2026-03-09, Added JWT/HMAC support, real-world scenario narrative, extensive Javadocs, and URL-Safe Base64 helpers.
     - 2026-03-09, Update documentation with demonstration flow and build instructions.
     - 2025-06-24, Added RSA/AES functionality.

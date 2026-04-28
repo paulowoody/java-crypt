@@ -19,7 +19,7 @@ import java.util.UUID;
 /**
  * Handles the creation and verification of JSON Web Tokens (JWTs).
  * This implementation implements the {@link TokenProvider} interface.
- * 
+ * <p>
  * JWTs are used for securely transmitting information between parties as a JSON object.
  * This implementation uses HMAC SHA-256 (symmetric key) to sign the tokens,
  * meaning both the creator and the verifier must share the same secret key.
@@ -50,8 +50,8 @@ public class MyJwt implements TokenProvider {
      * @param secret  The shared secret key used to sign the token via HMAC.
      * @return A Base64-URL encoded JWT string containing three parts: Header.Payload.Signature
      * @throws NoSuchAlgorithmException If the HmacSHA256 algorithm is not available.
-     * @throws InvalidKeyException If the secret key is invalid.
-     * @throws JsonProcessingException If JSON serialization of the header or payload fails.
+     * @throws InvalidKeyException      If the secret key is invalid.
+     * @throws JsonProcessingException  If JSON serialization of the header or payload fails.
      */
     @Override
     public String createToken(String subject, String secret) throws NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
@@ -83,7 +83,7 @@ public class MyJwt implements TokenProvider {
 
     /**
      * Verifies the structure, cryptographic signature, and expiration of a given JWT.
-     * 
+     *
      * @param token  The three-part JWT string to verify.
      * @param secret The shared secret key expected to have been used to sign the token.
      * @return True if the token is structurally valid, the signature matches, and it is not expired. False otherwise.
@@ -108,12 +108,11 @@ public class MyJwt implements TokenProvider {
 
             // Verify expiration
             String payloadJson = new String(Helper.b64UrlDecode(parts[1]), StandardCharsets.UTF_8);
-            Map<String, Object> payload = mapper.readValue(payloadJson, new TypeReference<Map<String, Object>>() {});
+            Map<String, Object> payload = mapper.readValue(payloadJson, new TypeReference<Map<String, Object>>() {
+            });
             if (payload.containsKey("exp")) {
                 long exp = ((Number) payload.get("exp")).longValue();
-                if (Instant.now().getEpochSecond() > exp) {
-                    return false; // Token has expired
-                }
+                return Instant.now().getEpochSecond() <= exp; // Token has expired
             }
 
             return true; // Token is valid and not expired
@@ -126,12 +125,12 @@ public class MyJwt implements TokenProvider {
     /**
      * Core cryptographic function that generates an HMAC SHA-256 signature for the token data.
      * The signature ensures the Header and Payload cannot be tampered with by a third party.
-     * 
+     *
      * @param message The message to sign (usually Header.Payload).
-     * @param secret The shared secret key to use for HMAC.
+     * @param secret  The shared secret key to use for HMAC.
      * @return The HMAC signature as a Base64-URL encoded String.
      * @throws NoSuchAlgorithmException If the HmacSHA256 algorithm is not available.
-     * @throws InvalidKeyException If the secret key is invalid.
+     * @throws InvalidKeyException      If the secret key is invalid.
      */
     private String sign(String message, String secret) throws NoSuchAlgorithmException, InvalidKeyException {
         byte[] hash = secret.getBytes(StandardCharsets.UTF_8);

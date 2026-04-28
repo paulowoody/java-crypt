@@ -19,7 +19,7 @@ public interface TokenProvider {
 
     /**
      * Verifies the structure, cryptographic signature, and validity of a given token.
-     * 
+     *
      * @param token  The token string to verify.
      * @param secret The shared secret key expected to have been used to sign the token.
      * @return True if the token is valid; false otherwise.

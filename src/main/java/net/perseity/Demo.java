@@ -1,16 +1,16 @@
 package net.perseity;
 
+import jakarta.mail.internet.MimeMultipart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import jakarta.mail.internet.MimeMultipart;
 import java.security.cert.X509Certificate;
 
 /**
  * The main demonstration class for the java-crypt library.
  * This class walks through several common cryptographic scenarios to show
  * how the library should be used.
- *
+ * <p>
  * Scenarios:
  * 1. RSA Key Pair Generation (Asymmetric)
  * 2. Key Exchange (RSA + AES)
@@ -31,7 +31,7 @@ public class Demo {
 
     /**
      * Entry point for the Java Cryptography Demonstration.
-     * 
+     *
      * @param args Command-line arguments (not used).
      */
     public static void main(String[] args) {
@@ -63,7 +63,7 @@ public class Demo {
             System.out.println();
             LOGGER.info("=== 2. Key Exchange (RSA + AES) ===");
             LOGGER.info("[Alice] wants to establish a fast, secure channel with [Bob].");
-            
+
             LOGGER.info("[Alice] loads [Bob]'s Public Key from 'bob.pub'...");
             MyKeyPair bobPublicKey = new MyKeyPair("bob.pub");
             LOGGER.info("(Alice) Bob's Public KeyID: {}", bobPublicKey.getPublicKeyId());
@@ -91,7 +91,7 @@ public class Demo {
             LOGGER.info("=== 3. Secure Messaging & Digital Signatures (Symmetric + Asymmetric) ===");
             String message = "Hello Alice! This is a secret message from Bob.";
             LOGGER.info("[Bob] wants to send a secret message to [Alice].");
-            
+
             LOGGER.info("[Bob] encrypts the message using the AES shared secret...");
             String encrypted = bobCrypt.encrypt(message);
             LOGGER.info("Encrypted Message: {}", encrypted);
@@ -159,16 +159,16 @@ public class Demo {
             LOGGER.info("=== 5. Real-World TLS Certificate Scenario ===");
             LOGGER.info("[Server/Alice] Wants to host a secure HTTPS website (e.g., alice.perseity.net).");
             LOGGER.info("[Server/Alice] Generates a self-signed TLS Certificate using her RSA Key Pair...");
-            
+
             String domain = "CN=alice.perseity.net";
             MyTLSCert tlsCert = new MyTLSCert(aliceKeyPair, domain, 365);
             Helper.saveCert(tlsCert.getCertificate(), "alice-cert.pem");
             LOGGER.info("[Server/Alice] Certificate generated for {} and saved to alice-cert.pem", domain);
-            
+
             LOGGER.info("[Client/Bob] Connects to the server and downloads the TLS Certificate...");
             X509Certificate downloadedCert = Helper.readCert("alice-cert.pem");
             MyTLSCert bobViewOfCert = new MyTLSCert(downloadedCert);
-            
+
             LOGGER.info("[Client/Bob] Verifies the certificate's signature...");
             boolean isCertValid = bobViewOfCert.verifySignature(aliceKeyPair.getPublicKey());
             if (isCertValid) {
@@ -183,10 +183,10 @@ public class Demo {
             LOGGER.info("[Hacker/Eve] Generates her own RSA Key Pair and a forged TLS Certificate for alice.perseity.net...");
             MyKeyPair hackerKeyPair = new MyKeyPair();
             MyTLSCert forgedCert = new MyTLSCert(hackerKeyPair, domain, 365);
-            
+
             LOGGER.info("[Client/Bob] Is tricked into connecting to Eve's server and downloads the forged TLS Certificate...");
             MyTLSCert bobViewOfForgedCert = new MyTLSCert(forgedCert.getCertificate());
-            
+
             LOGGER.info("[Client/Bob] Verifies the forged certificate's signature against Alice's trusted public key...");
             boolean isForgedCertValid = bobViewOfForgedCert.verifySignature(aliceKeyPair.getPublicKey());
             if (isForgedCertValid) {
@@ -199,32 +199,32 @@ public class Demo {
             // --- Part 6: Secure Email ---
             System.out.println();
             LOGGER.info("=== 6. Secure Email Scenario (Using SecureMessageTransport Interface) ===");
-            
+
             // Register MailcapCommandMap to fix missing handlers in fat jar
             Helper.setupMailcap();
 
             LOGGER.info("[Alice] wants to send a secure, signed, and encrypted email to [Bob].");
             String emailBody = "Hello Bob! This email is signed so you know it's from me, and encrypted so nobody else can read it.";
-            
+
             SecureMessageTransport emailTransport = new MySecureEmail();
             LOGGER.info("[Alice] Signs and encrypts the email using her Private Key and [Bob]'s Public Key...");
             MimeMultipart secureEmail = emailTransport.signAndEncrypt(emailBody, aliceKeyPair, bobKeyPair);
-            
+
             // Save to disk to simulate sending and allow inspection
             String emailFile = "alice-to-bob-secure.eml";
             Helper.saveMimeMultipart(secureEmail, emailFile);
             LOGGER.info("[Alice] Saved secure email to {}", emailFile);
-            
+
             LOGGER.info("[Email Server] Routes the encrypted email over the internet to [Bob]...");
-            
+
             // Bob loads the email from disk
             MimeMultipart receivedEmail = Helper.loadMimeMultipart(emailFile);
-            
+
             LOGGER.info("[Bob] Receives the email, decrypts it using his Private Key, and verifies the signature...");
-            
+
             MyKeyPair alicePublicKeyOnly = aliceKeyPair.getPublicOnly();
             SecureMessageTransport.DecryptedEmail decryptedEmail = emailTransport.decryptAndVerify(receivedEmail, bobKeyPair, alicePublicKeyOnly);
-            
+
             if (decryptedEmail.isSignatureValid()) {
                 LOGGER.info("[Bob] Signature is VALID. The decrypted message is: '{}'", decryptedEmail.getMessage());
             } else {
@@ -235,7 +235,7 @@ public class Demo {
             System.out.println();
             LOGGER.info("[Hacker/Eve] Intercepts the encrypted email while it's routing over the internet!");
             MyKeyPair eveKeyPair = new MyKeyPair();
-            
+
             LOGGER.info("[Hacker/Eve] Tries to decrypt the email using her own Private Key to steal the contents...");
             try {
                 emailTransport.decryptAndVerify(receivedEmail, eveKeyPair, aliceKeyPair);
@@ -259,13 +259,13 @@ public class Demo {
             LOGGER.info("[Bob] Receives a new encrypted email and decrypts it...");
             // Bob loads the forged email from disk
             MimeMultipart receivedForgedEmail = Helper.loadMimeMultipart(forgedEmailFile);
-            
+
             // Bob decrypts it, but expects it to be from Alice (alicePublicKeyOnly)
             SecureMessageTransport.DecryptedEmail decryptedForgedEmail = emailTransport.decryptAndVerify(receivedForgedEmail, bobKeyPair, alicePublicKeyOnly);
-            
+
             LOGGER.info("[Bob] Reads the message: '{}'", decryptedForgedEmail.getMessage());
             LOGGER.info("[Bob] Suspicious! He checks the signature status...");
-            
+
             if (decryptedForgedEmail.isSignatureValid()) {
                 LOGGER.error("[Bob] Uh oh! Bob trusted the forged email!");
             } else {
